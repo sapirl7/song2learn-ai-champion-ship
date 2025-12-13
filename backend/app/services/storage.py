@@ -11,9 +11,10 @@ class StorageService:
     """Service for Vultr Object Storage (S3-compatible)."""
 
     def __init__(self):
-        self.bucket_name = settings.VULTR_BUCKET_NAME
-        self.region = settings.VULTR_REGION
-        self.endpoint_url = settings.VULTR_ENDPOINT_URL
+        # Align with current settings naming (VULTR_S3_*) and derived endpoint/public URLs.
+        self.bucket_name = settings.VULTR_S3_BUCKET
+        self.region = settings.VULTR_S3_REGION
+        self.endpoint_url = settings.vultr_endpoint_url
         self._client = None
 
     @property
@@ -23,8 +24,8 @@ class StorageService:
             self._client = boto3.client(
                 "s3",
                 endpoint_url=self.endpoint_url,
-                aws_access_key_id=settings.VULTR_ACCESS_KEY,
-                aws_secret_access_key=settings.VULTR_SECRET_KEY,
+                aws_access_key_id=settings.VULTR_S3_ACCESS_KEY,
+                aws_secret_access_key=settings.VULTR_S3_SECRET_KEY,
                 region_name=self.region,
             )
         return self._client
