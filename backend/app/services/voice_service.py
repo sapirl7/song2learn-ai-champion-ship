@@ -1,4 +1,5 @@
 import hashlib
+from typing import Optional
 import aioboto3
 from botocore.exceptions import ClientError
 import structlog
@@ -8,28 +9,52 @@ from app.services.http_client import get_http_client
 
 logger = structlog.get_logger()
 
+VOICES = {
+    "en": "21m00Tcm4TlvDq8ikWAM",
+    "es": "AZnzlk1XvdvUeBnXmlld",
+    "fr": "ThT5KcBeYPX3keUQqHPh",
+    "de": "g5CIjZEefAph4nQFvHAz",
+    "ru": "TX3LPaxmHKxFdv7VOQHJ",
+}
+
+MAX_TEXT_LENGTH = 500
+
 
 class VoiceService:
     """
-    Combined voice service with ElevenLabs TTS and Vultr S3 storage.
-    Uses aioboto3 for async S3 operations with single context per call.
+    ElevenLabs TTS + Vultr S3 storage.
+    v5: single S3 context per call + ACL fallback + hash-based keys.
     """
 
     def __init__(self):
         self.api_key = settings.ELEVENLABS_API_KEY
         self.base_url = "https://api.elevenlabs.io/v1"
-        self.voice_id = "21m00Tcm4TlvDq8ikWAM"  # Rachel - default multilingual voice
         self.bucket = settings.VULTR_S3_BUCKET
+        self.region = settings.VULTR_S3_REGION
         self._session = aioboto3.Session()
 
-    def _generate_key(self, text: str, voice_id: str) -> str:
-        """Generate a unique key for the audio file using SHA256."""
-        content = f"{text}|{voice_id}"
-        hash_val = hashlib.sha256(content.encode()).hexdigest()[:16]
-        return f"tts/{hash_val}.mp3"
+    def _audio_key(self, text: str, lang: str, speed: float) -> str:
+        h = hashlib.sha256(f"{text}:{lang}:{speed}".encode()).hexdigest()[:16]
+        return f"tts/{h}.mp3"
 
-    async def _check_exists(self, key: str) -> str | None:
-        """Check if audio exists in S3 and return public URL if found."""
+    def _public_url(self, key: str) -> str:
+        return f"{settings.vultr_public_url}/{key}"
+
+    async def speak(
+        self,
+        text: str,
+        voice_id: Optional[str] = None,
+        language: Optional[str] = None,
+        speed: Optional[float] = None,
+    ) -> str:
+        text = (text or "")[:MAX_TEXT_LENGTH]
+        lang = (language or "en").lower()
+        spd = 1.0 if speed is None else float(speed)
+        spd = max(0.7, min(1.2, spd))
+
+        vid = voice_id or VOICES.get(lang, VOICES["en"])
+        key = self._audio_key(text, lang, spd)
+
         async with self._session.client(
             "s3",
             endpoint_url=settings.vultr_endpoint_url,
@@ -37,103 +62,57 @@ class VoiceService:
             aws_secret_access_key=settings.VULTR_S3_SECRET_KEY,
             region_name=settings.VULTR_S3_REGION,
         ) as s3:
+            # Cache check
             try:
                 await s3.head_object(Bucket=self.bucket, Key=key)
-                return f"{settings.vultr_public_url}/{key}"
+                logger.debug("voice_cache_hit", key=key[:30])
+                return self._public_url(key)
             except ClientError as e:
-                if e.response["Error"]["Code"] == "404":
-                    return None
-                logger.warning("s3_head_error", key=key, error=str(e))
-                return None
+                if e.response.get("Error", {}).get("Code") != "404":
+                    logger.warning("s3_head_error", key=key, error=str(e))
 
-    async def _upload_audio(self, key: str, data: bytes) -> str:
-        """Upload audio to S3 with graceful ACL handling."""
-        async with self._session.client(
-            "s3",
-            endpoint_url=settings.vultr_endpoint_url,
-            aws_access_key_id=settings.VULTR_S3_ACCESS_KEY,
-            aws_secret_access_key=settings.VULTR_S3_SECRET_KEY,
-            region_name=settings.VULTR_S3_REGION,
-        ) as s3:
-            try:
-                # Try with ACL first
-                await s3.put_object(
-                    Bucket=self.bucket,
-                    Key=key,
-                    Body=data,
-                    ContentType="audio/mpeg",
-                    ACL="public-read",
-                )
-            except ClientError as e:
-                error_code = e.response.get("Error", {}).get("Code", "")
-                if error_code in ("AccessControlListNotSupported", "AccessDenied"):
-                    # Retry without ACL - bucket policy handles public access
-                    logger.info("s3_acl_not_supported_retrying", key=key)
-                    await s3.put_object(
-                        Bucket=self.bucket,
-                        Key=key,
-                        Body=data,
-                        ContentType="audio/mpeg",
-                    )
-                else:
-                    raise
-
-            logger.info("s3_upload_success", key=key)
-            return f"{settings.vultr_public_url}/{key}"
-
-    async def speak(self, text: str, voice_id: str | None = None) -> str:
-        """
-        Generate speech from text using ElevenLabs and store in Vultr S3.
-
-        Args:
-            text: Text to convert to speech
-            voice_id: Optional voice ID (uses default if not provided)
-
-        Returns:
-            Public URL to the audio file
-        """
-        voice_id = voice_id or self.voice_id
-        key = self._generate_key(text, voice_id)
-
-        # Check if audio already exists in storage
-        existing_url = await self._check_exists(key)
-        if existing_url:
-            logger.debug("voice_cache_hit", key=key[:30])
-            return existing_url
-
-        # Generate audio via ElevenLabs
-        client = get_http_client()
-        headers = {
-            "xi-api-key": self.api_key,
-            "Content-Type": "application/json",
-        }
-
-        try:
+            # Generate audio via ElevenLabs
+            client = get_http_client()
             response = await client.post(
-                f"{self.base_url}/text-to-speech/{voice_id}",
-                headers=headers,
+                f"{self.base_url}/text-to-speech/{vid}",
+                headers={"xi-api-key": self.api_key, "Content-Type": "application/json"},
                 json={
                     "text": text,
                     "model_id": "eleven_multilingual_v2",
                     "voice_settings": {
                         "stability": 0.5,
                         "similarity_boost": 0.75,
+                        "speed": spd,
                     },
                 },
             )
             response.raise_for_status()
-
-            # Upload to S3
             audio_data = response.content
-            public_url = await self._upload_audio(key, audio_data)
 
-            logger.info("voice_generated", text_len=len(text), url=public_url[:50])
-            return public_url
+            # Upload with ACL fallback
+            try:
+                await s3.put_object(
+                    Bucket=self.bucket,
+                    Key=key,
+                    Body=audio_data,
+                    ContentType="audio/mpeg",
+                    ACL="public-read",
+                )
+            except ClientError as e:
+                code = e.response.get("Error", {}).get("Code", "")
+                if code in ("AccessControlListNotSupported", "AccessDenied"):
+                    logger.info("s3_acl_not_supported_retrying", key=key)
+                    await s3.put_object(
+                        Bucket=self.bucket,
+                        Key=key,
+                        Body=audio_data,
+                        ContentType="audio/mpeg",
+                    )
+                else:
+                    raise
 
-        except Exception as e:
-            logger.error("voice_speak_error", text=text[:50], error=str(e))
-            raise
+            logger.info("voice_generated", text_len=len(text), key=key)
+            return self._public_url(key)
 
 
-# Singleton instance
 voice_service = VoiceService()

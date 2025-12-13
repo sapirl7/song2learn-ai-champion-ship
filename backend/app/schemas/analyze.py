@@ -19,6 +19,8 @@ class AnalyzeResponse(BaseModel):
 class SpeakRequest(BaseModel):
     text: str
     voice_id: Optional[str] = None
+    language: Optional[str] = None
+    speed: Optional[float] = None
 
 
 class SpeakResponse(BaseModel):

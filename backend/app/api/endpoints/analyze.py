@@ -52,5 +52,7 @@ async def speak_text(
     audio_url = await voice_service.speak(
         text=data.text,
         voice_id=data.voice_id,
+        language=data.language,
+        speed=data.speed,
     )
     return SpeakResponse(audio_url=audio_url)

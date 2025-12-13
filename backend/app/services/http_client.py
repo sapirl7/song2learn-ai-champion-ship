@@ -16,8 +16,8 @@ async def init_http_client():
     """Initialize the shared HTTP client."""
     global _http_client
     _http_client = httpx.AsyncClient(
-        timeout=httpx.Timeout(30.0),
-        limits=httpx.Limits(max_keepalive_connections=10, max_connections=20),
+        timeout=httpx.Timeout(10.0, connect=3.0),
+        limits=httpx.Limits(max_keepalive_connections=20, max_connections=50),
     )
 
 
