@@ -1,6 +1,8 @@
-from app.services.lrclib import LRCLibService
-from app.services.cerebras import CerebrasService
-from app.services.elevenlabs import ElevenLabsService
-from app.services.storage import StorageService
+"""
+Services package.
 
-__all__ = ["LRCLibService", "CerebrasService", "ElevenLabsService", "StorageService"]
+Important: do NOT import/instantiate services at package import time.
+Import concrete services from their modules, e.g. `from app.services.lrclib import lrclib_service`.
+"""
+
+__all__: list[str] = []
