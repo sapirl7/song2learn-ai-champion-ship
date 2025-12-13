@@ -86,6 +86,21 @@ export const translations = {
       en: 'Reset', ru: 'Сбросить', fr: 'Réinitialiser', de: 'Zurücksetzen', es: 'Reiniciar',
       pt: 'Reiniciar', pl: 'Resetuj', zh: '重置', hi: 'रीसेट', ar: 'إعادة تعيين'
     },
+    iLearn: {
+      en: 'I learn', ru: 'Учу', fr: "J'apprends", de: 'Ich lerne', es: 'Aprendo',
+      pt: 'Aprendo', pl: 'Uczę się', zh: '我学', hi: 'मैं सीखता हूँ', ar: 'أتعلم'
+    },
+    iLearnTooltip: {
+      en: 'The language you are learning', ru: 'Язык, который вы изучаете', fr: 'La langue que vous apprenez',
+      de: 'Die Sprache, die Sie lernen', es: 'El idioma que estás aprendiendo', pt: 'O idioma que você está aprendendo',
+      pl: 'Język, którego się uczysz', zh: '您正在学习的语言', hi: 'जो भाषा आप सीख रहे हैं', ar: 'اللغة التي تتعلمها'
+    },
+    translateToTooltip: {
+      en: 'Translation will be shown in this language', ru: 'Перевод будет на этом языке',
+      fr: 'La traduction sera affichée dans cette langue', de: 'Übersetzung wird in dieser Sprache angezeigt',
+      es: 'La traducción se mostrará en este idioma', pt: 'A tradução será mostrada neste idioma',
+      pl: 'Tłumaczenie będzie w tym języku', zh: '翻译将以此语言显示', hi: 'अनुवाद इस भाषा में दिखाया जाएगा', ar: 'ستظهر الترجمة بهذه اللغة'
+    },
   },
 
   // ============ SEARCH PAGE ============
@@ -457,6 +472,24 @@ export const translations = {
       de: 'Fahren Sie über eine Zeile oder tippen Sie', es: 'Pasa el cursor o toca una línea',
       pt: 'Passe o mouse ou toque em uma linha', pl: 'Najedź lub dotknij linii',
       zh: '悬停或点击一行', hi: 'किसी पंक्ति पर होवर या टैप करें', ar: 'مرر أو انقر على سطر'
+    },
+    storyButton: {
+      en: 'Learn the story behind this song', ru: 'Узнать историю этой песни', fr: "Découvrir l'histoire de cette chanson",
+      de: 'Die Geschichte hinter diesem Lied', es: 'Conoce la historia de esta canción',
+      pt: 'Conheça a história desta música', pl: 'Poznaj historię tej piosenki',
+      zh: '了解这首歌的故事', hi: 'इस गाने की कहानी जानें', ar: 'تعرف على قصة هذه الأغنية'
+    },
+    storyLoading: {
+      en: 'Researching the story...', ru: 'Ищем историю...', fr: "Recherche de l'histoire...",
+      de: 'Geschichte wird recherchiert...', es: 'Investigando la historia...',
+      pt: 'Pesquisando a história...', pl: 'Szukam historii...',
+      zh: '正在研究故事...', hi: 'कहानी खोज रहा है...', ar: 'جار البحث عن القصة...'
+    },
+    storyTitle: {
+      en: 'Story behind the song', ru: 'История песни', fr: "L'histoire de la chanson",
+      de: 'Geschichte des Liedes', es: 'Historia de la canción',
+      pt: 'História da música', pl: 'Historia piosenki',
+      zh: '歌曲背后的故事', hi: 'गाने की कहानी', ar: 'قصة الأغنية'
     },
   },
 

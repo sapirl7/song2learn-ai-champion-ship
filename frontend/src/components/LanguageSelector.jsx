@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { Globe, ArrowRight } from 'lucide-react'
 import { LANGUAGES, useLang } from '../stores/useLang'
+import { getLangName, t } from '../i18n/translations'
 
 // Compact UI language selector for corner placement
 export function UiLanguageSelector() {
@@ -27,7 +28,7 @@ export function UiLanguageSelector() {
 
 // Learning language pair selector (more prominent)
 export function LearningLanguageSelector({ user }) {
-  const { learningLang, nativeLang, setLearningLang, setNativeLang, seedFromUser } = useLang()
+  const { learningLang, nativeLang, uiLang, setLearningLang, setNativeLang, seedFromUser } = useLang()
 
   useEffect(() => {
     seedFromUser(user)
@@ -35,16 +36,17 @@ export function LearningLanguageSelector({ user }) {
 
   return (
     <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded-full">
-      <span className="text-xs text-primary-600 font-medium hidden sm:inline">Learning:</span>
+      <span className="text-xs text-primary-600 font-medium hidden sm:inline">{t('common.iLearn', uiLang)}:</span>
       <select
         value={learningLang}
         onChange={(e) => setLearningLang(e.target.value)}
         className="bg-transparent text-sm font-medium text-primary-700 cursor-pointer focus:outline-none"
         aria-label="Language you're learning"
+        title={t('common.iLearnTooltip', uiLang)}
       >
         {LANGUAGES.map((l) => (
           <option key={l.code} value={l.code}>
-            {l.name}
+            {getLangName(l.code, uiLang)}
           </option>
         ))}
       </select>
@@ -53,11 +55,12 @@ export function LearningLanguageSelector({ user }) {
         value={nativeLang}
         onChange={(e) => setNativeLang(e.target.value)}
         className="bg-transparent text-sm font-medium text-primary-700 cursor-pointer focus:outline-none"
-        aria-label="Your native language"
+        aria-label="Translation language"
+        title={t('common.translateToTooltip', uiLang)}
       >
         {LANGUAGES.map((l) => (
           <option key={l.code} value={l.code}>
-            {l.name}
+            {getLangName(l.code, uiLang)}
           </option>
         ))}
       </select>

@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { songsApi, userSongsApi, analyzeApi, vocabularyApi, voiceApi } from '../api/client'
 import { useUser } from '../stores/useUser'
 import { useLang } from '../stores/useLang'
+import { t } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import {
   ArrowLeft,
@@ -12,6 +13,9 @@ import {
   Loader2,
   Plus,
   X,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react'
 
 const HOVER_DELAY = 150 // ms before triggering analysis on hover
@@ -22,7 +26,7 @@ function SongView() {
   const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useUser()
-  const { nativeLang, learningLang } = useLang()
+  const { nativeLang, learningLang, uiLang } = useLang()
   const audioRef = useRef(null)
   const hoverTimeoutRef = useRef(null)
   const abortControllerRef = useRef(null)
@@ -33,6 +37,9 @@ function SongView() {
   const [savingWord, setSavingWord] = useState(false)
   const [showWhy, setShowWhy] = useState(true)
   const [interlinearTokens, setInterlinearTokens] = useState(null)
+  const [showStory, setShowStory] = useState(false)
+  const [story, setStory] = useState(null)
+  const [storyLoading, setStoryLoading] = useState(false)
 
   // Fetch song data
   const { data: song, isLoading: songLoading } = useQuery({
@@ -265,11 +272,10 @@ function SongView() {
         <button
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-            isSaved
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isSaved
               ? 'bg-red-50 text-red-600 hover:bg-red-100'
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-          }`}
+            }`}
         >
           <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
           {isSaved ? 'Saved' : 'Save'}
@@ -282,6 +288,59 @@ function SongView() {
         <p className="text-lg text-gray-600">{song.artist}</p>
         {song.album && (
           <p className="text-sm text-gray-500 mt-1">{song.album}</p>
+        )}
+
+        {/* Story button */}
+        <button
+          type="button"
+          onClick={async () => {
+            if (showStory) {
+              setShowStory(false)
+              return
+            }
+            if (story) {
+              setShowStory(true)
+              return
+            }
+            setStoryLoading(true)
+            setShowStory(true)
+            try {
+              const res = await songsApi.getStory(id, uiLang)
+              setStory(res.data.story)
+            } catch (error) {
+              const detail = error?.response?.data?.detail
+              toast.error(detail || 'Could not load story')
+              setShowStory(false)
+            } finally {
+              setStoryLoading(false)
+            }
+          }}
+          disabled={storyLoading}
+          className="mt-4 flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-medium rounded-lg hover:from-amber-600 hover:to-orange-600 transition-all shadow-sm disabled:opacity-50"
+        >
+          <BookOpen className="w-4 h-4" />
+          {t('song.storyButton', uiLang)}
+          {showStory ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+        </button>
+
+        {/* Story content */}
+        {showStory && (
+          <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <h3 className="font-semibold text-amber-900 mb-3 flex items-center gap-2">
+              <BookOpen className="w-5 h-5" />
+              {t('song.storyTitle', uiLang)}
+            </h3>
+            {storyLoading ? (
+              <div className="flex items-center gap-2 text-amber-700">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                {t('song.storyLoading', uiLang)}
+              </div>
+            ) : (
+              <div className="text-amber-900 text-sm leading-relaxed whitespace-pre-line">
+                {story}
+              </div>
+            )}
+          </div>
         )}
       </div>
 

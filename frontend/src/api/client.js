@@ -50,6 +50,7 @@ export const songsApi = {
   search: (query) => client.get('/songs/search', { params: { q: query } }),
   import: (data) => client.post('/songs/import', data),
   get: (id) => client.get(`/songs/${id}`),
+  getStory: (id, targetLang) => client.get(`/songs/${id}/story`, { params: { target_lang: targetLang } }),
 }
 
 // User Songs API

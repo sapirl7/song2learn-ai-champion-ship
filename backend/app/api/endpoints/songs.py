@@ -100,3 +100,42 @@ async def get_song(
         )
 
     return song
+
+
+@router.get("/{song_id}/story")
+async def get_song_story(
+    song_id: int,
+    target_lang: str = Query("en", description="Language for the story"),
+    db: AsyncSession = Depends(get_db),
+    _: int = Depends(get_current_user_id),
+):
+    """
+    Get AI-generated story about the song:
+    - Who wrote the lyrics and when
+    - Historical/life context of the author
+    - How these lyrics ended up with the current artist
+    """
+    from app.services.cerebras import cerebras_service
+
+    result = await db.execute(select(Song).where(Song.id == song_id))
+    song = result.scalar_one_or_none()
+
+    if not song:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Song not found",
+        )
+
+    story = await cerebras_service.generate_song_story(
+        title=song.title,
+        artist=song.artist,
+        target_lang=target_lang,
+    )
+
+    if not story:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Story generation unavailable. AI service may not be configured.",
+        )
+
+    return {"story": story, "song_id": song_id}

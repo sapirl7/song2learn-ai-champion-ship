@@ -303,5 +303,63 @@ JSON only:
             logger.error("cerebras_translate_word_error", error=str(e))
             return ""
 
+    async def generate_song_story(
+        self,
+        title: str,
+        artist: str,
+        target_lang: str = "en",
+    ) -> str:
+        """
+        Generate a story about the song's creation:
+        - Who wrote the lyrics and when
+        - Historical/life context of the author
+        - How these lyrics ended up with the current band/artist
+
+        Returns the story text in target_lang.
+        """
+        if not self.api_key:
+            return ""
+
+        title = (title or "")[:150]
+        artist = (artist or "")[:150]
+
+        prompt = f"""Tell the story behind this song in {target_lang}.
+Song: "{title}" by {artist}
+
+Include:
+1. Who wrote the lyrics (original author if different from performer)
+2. What period of their life they wrote it and what inspired it
+3. How the song ended up with the current artist/band
+
+Keep it engaging, 3-5 paragraphs. If you're not certain about facts, note that.
+
+JSON only:
+{{"story":"..."}}
+"""
+        try:
+            client = get_http_client()
+            resp = await client.post(
+                CEREBRAS_URL,
+                headers=self._headers(),
+                json={
+                    "model": MODEL,
+                    "messages": [
+                        {"role": "system", "content": "Music historian and storyteller. Valid JSON only."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "max_tokens": 800,
+                    "temperature": 0.5,
+                },
+            )
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"]
+            data = json.loads(content)
+            story = str(data.get("story", "")).strip()
+            return story[:3000]
+        except Exception as e:
+            logger.error("cerebras_song_story_error", error=str(e))
+            return ""
+
 
 cerebras_service = CerebrasService()

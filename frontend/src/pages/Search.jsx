@@ -77,56 +77,67 @@ function Search() {
   const surpriseText = t('search.surpriseMe', uiLang, { lang: learningLangName })
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('search.title', uiLang)}</h1>
-        <p className="text-gray-600">{t('search.subtitle', uiLang)}</p>
-      </div>
-
-      {/* Help text */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-        <div className="flex items-start gap-3">
-          <HelpCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-blue-700">{t('search.helpText', uiLang)}</p>
+    <div className="max-w-3xl mx-auto px-4 py-8">
+      {/* Hero Section */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
+          <Music className="w-8 h-8 text-white" />
         </div>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('search.title', uiLang)}</h1>
+        <p className="text-gray-500">{t('search.subtitle', uiLang)}</p>
       </div>
 
-      <div className="flex items-center justify-center mb-6">
+      {/* Search Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        {/* Search form */}
+        <form onSubmit={handleSearch} className="mb-5">
+          <div className="relative">
+            <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t('search.placeholder', uiLang)}
+              className="w-full pl-12 pr-28 py-4 text-base border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-shadow"
+            />
+            <button
+              type="submit"
+              disabled={isSearching || !query.trim()}
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 px-5 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSearching ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                t('common.search', uiLang)
+              )}
+            </button>
+          </div>
+        </form>
+
+        {/* Divider with "or" */}
+        <div className="flex items-center gap-4 mb-5">
+          <div className="flex-1 h-px bg-gray-200"></div>
+          <span className="text-sm text-gray-400">{t('common.or', uiLang)}</span>
+          <div className="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        {/* Surprise Me Button */}
         <button
           type="button"
           onClick={handleSurprise}
           disabled={isSurprising}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
         >
           {isSurprising ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
           {surpriseText}
         </button>
       </div>
 
-      {/* Search form */}
-      <form onSubmit={handleSearch} className="mb-8">
-        <div className="relative">
-          <SearchIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t('search.placeholder', uiLang)}
-            className="w-full pl-12 pr-32 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-          <button
-            type="submit"
-            disabled={isSearching || !query.trim()}
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-6 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50"
-          >
-            {isSearching ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
-            ) : (
-              t('common.search', uiLang)
-            )}
-          </button>
-        </div>
-      </form>
+      {/* Help text - compact */}
+      <div className="flex items-start gap-3 bg-blue-50/70 border border-blue-100 rounded-xl px-4 py-3 mb-6">
+        <HelpCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
+        <p className="text-sm text-blue-700">{t('search.helpText', uiLang)}</p>
+      </div>
 
       {/* Results */}
       {results.length > 0 && (
@@ -137,11 +148,11 @@ function Search() {
           {results.map((song) => (
             <div
               key={song.id}
-              className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-primary-300 transition-colors"
+              className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100 hover:border-primary-200 hover:shadow-sm transition-all"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                  <Music className="w-6 h-6 text-primary-500" />
+                <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-primary-200 rounded-lg flex items-center justify-center">
+                  <Music className="w-6 h-6 text-primary-600" />
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-900">{song.trackName}</h3>
@@ -170,9 +181,11 @@ function Search() {
 
       {/* Empty state */}
       {results.length === 0 && !isSearching && (
-        <div className="text-center py-16">
-          <Music className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">{t('search.emptyState', uiLang)}</p>
+        <div className="text-center py-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gray-100 rounded-full mb-4">
+            <Music className="w-10 h-10 text-gray-300" />
+          </div>
+          <p className="text-gray-400">{t('search.emptyState', uiLang)}</p>
         </div>
       )}
     </div>
