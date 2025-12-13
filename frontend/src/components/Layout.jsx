@@ -1,7 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
-import { Search, Heart, BookOpen, GraduationCap, LogOut, Music } from 'lucide-react'
-import LanguageSelector from './LanguageSelector'
+import { Search, Heart, BookOpen, GraduationCap, LogOut, Music, User } from 'lucide-react'
+import { LearningLanguageSelector, UiLanguageSelector } from './LanguageSelector'
 
 function Layout() {
   const { user, logout } = useUser()
@@ -20,28 +20,33 @@ function Layout() {
   ]
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo */}
-            <div className="flex items-center gap-2">
-              <Music className="w-8 h-8 text-primary-500" />
-              <span className="text-xl font-bold text-gray-900">Song2Learn</span>
+          <div className="flex justify-between items-center h-14">
+            {/* Left: Logo + Language Selector */}
+            <div className="flex items-center gap-4">
+              <NavLink to="/search" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                <Music className="w-7 h-7 text-primary-500" />
+                <span className="text-lg font-bold text-gray-900 hidden sm:inline">Song2Learn</span>
+              </NavLink>
+
+              {/* Learning language pair - prominent position */}
+              <LearningLanguageSelector user={user} />
             </div>
 
-            {/* Navigation */}
+            {/* Center: Navigation (desktop) */}
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    `flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    `flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                       isActive
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-primary-100 text-primary-700'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }`
                   }
                 >
@@ -51,32 +56,43 @@ function Layout() {
               ))}
             </nav>
 
-            {/* User menu */}
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <LanguageSelector user={user} />
-              <span className="hidden sm:inline text-sm text-gray-600">{user?.email}</span>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
-              >
-                <LogOut className="w-4 h-4" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
+            {/* Right: User menu + UI language */}
+            <div className="flex items-center gap-3">
+              {/* UI Language - compact, in corner */}
+              <UiLanguageSelector />
+
+              {/* User dropdown-like area */}
+              <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
+                <div className="hidden sm:flex items-center gap-1.5 text-sm text-gray-600">
+                  <User className="w-4 h-4" />
+                  <span className="max-w-[120px] truncate">{user?.email}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden lg:inline">Logout</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Mobile navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
         <div className="flex justify-around py-2">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 px-3 py-2 text-xs ${
-                  isActive ? 'text-primary-600' : 'text-gray-500'
+                `flex flex-col items-center gap-0.5 px-3 py-1.5 text-xs rounded-lg transition-colors ${
+                  isActive
+                    ? 'text-primary-600 bg-primary-50'
+                    : 'text-gray-500 hover:text-gray-700'
                 }`
               }
             >
