@@ -46,8 +46,8 @@ services:
       - key: RATE_LIMIT_VOICE
         value: 20/minute
       - key: TRUSTED_PROXIES
-        # Comma-separated CIDRs/IPs (optional). If unset, backend uses defaults.
-        value: 127.0.0.1,10.0.0.0/8,172.16.0.0/12
+        # Pydantic parses List[str] from env as JSON by default.
+        value: '["127.0.0.1","10.0.0.0/8","172.16.0.0/12"]'
 
 databases:
   - name: song2learn-db

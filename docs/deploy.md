@@ -63,7 +63,7 @@ Set these in Render (names must match code):
 - `VULTR_S3_BUCKET`
 - `RATE_LIMIT_ANALYZE` (optional; e.g. `60/minute`)
 - `RATE_LIMIT_VOICE` (optional; e.g. `20/minute`)
-- `TRUSTED_PROXIES` (optional; list for XFF validation)
+- `TRUSTED_PROXIES` (optional; list for XFF validation). For `List[str]` values, Render env should be JSON, e.g. `["127.0.0.1","10.0.0.0/8"]`.
 
 ### 2.3 Post-deploy checks (Render)
 
