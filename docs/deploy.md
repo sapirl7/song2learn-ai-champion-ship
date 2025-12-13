@@ -40,6 +40,9 @@ In Render Dashboard:
   - `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
 
 > Important: Root Directory must be `backend` to avoid accidental Node app detection from the repo root.
+>
+> Important: ensure Render uses **Python 3.12 (or 3.11)**. Some dependencies (e.g. `pydantic-core` for older `pydantic` pins)
+> may not provide wheels for the newest Python (3.13) and will try to compile from source during deploy.
 
 ### 2.2 Environment variables (Render)
 
