@@ -15,8 +15,24 @@ from app.models import User, Song, UserSong, Vocabulary  # noqa: F401
 # Alembic Config object
 config = context.config
 
-# Set the SQLAlchemy URL from settings
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+def _as_asyncpg_url(url: str) -> str:
+    """
+    Render Postgres commonly provides DATABASE_URL like 'postgres://...' or 'postgresql://...'.
+    Alembic here uses async_engine_from_config, so we must use an asyncpg URL.
+    """
+    if not url:
+        return url
+    if "+asyncpg" in url:
+        return url
+    if url.startswith("postgres://"):
+        return "postgresql+asyncpg://" + url.removeprefix("postgres://")
+    if url.startswith("postgresql://"):
+        return "postgresql+asyncpg://" + url.removeprefix("postgresql://")
+    return url
+
+
+# Set the SQLAlchemy URL from settings (normalized for async migrations)
+config.set_main_option("sqlalchemy.url", _as_asyncpg_url(settings.DATABASE_URL))
 
 # Interpret the config file for Python logging
 if config.config_file_name is not None:

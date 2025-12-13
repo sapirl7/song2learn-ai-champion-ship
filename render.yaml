@@ -6,8 +6,9 @@ services:
     region: frankfurt
     plan: free
     buildCommand: pip install -r backend/requirements.txt
-    # Use --app-dir to make module import work even if Render runs from repo root.
-    startCommand: uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port $PORT
+    # Run migrations on startup, then start the API.
+    # (Keeps Render DB schema in sync; fixes 500s from missing tables.)
+    startCommand: bash -lc "cd backend && alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
     envVars:
       # Pin Python to avoid building native deps from source on latest runtimes.
       # (Example issue: pydantic-core may not have wheels for Python 3.13 for older pydantic versions.)
