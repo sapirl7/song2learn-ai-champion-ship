@@ -37,12 +37,13 @@ async def random_iconic_song(
     if not native_lang:
         native_lang = (u.native_lang if u else "en") or "en"
 
-    # Try up to 3 different songs if LRCLIB doesn't find the first one
-    MAX_ATTEMPTS = 3
+    # Try up to 5 different songs from target language, then fallback to English
+    MAX_ATTEMPTS = 5
     tried_songs = set()
     lrclib_data = None
     pick = None
     
+    # Try target language first
     for _ in range(MAX_ATTEMPTS):
         pick = pick_iconic_song(learning_lang)
         song_key = (pick.title, pick.artist)
@@ -53,11 +54,26 @@ async def random_iconic_song(
         lrclib_data = await lrclib_service.get_lyrics(track_name=pick.title, artist_name=pick.artist)
         if lrclib_data:
             break
-        logger.info("discover_song_not_found", title=pick.title, artist=pick.artist, attempt=len(tried_songs))
+        logger.info("discover_song_not_found", title=pick.title, artist=pick.artist, lang=learning_lang, attempt=len(tried_songs))
+    
+    # Fallback to English if target language songs not found
+    if not lrclib_data and learning_lang != "en":
+        logger.info("discover_fallback_to_english", original_lang=learning_lang)
+        tried_songs.clear()
+        for _ in range(3):
+            pick = pick_iconic_song("en")
+            song_key = (pick.title, pick.artist)
+            if song_key in tried_songs:
+                continue
+            tried_songs.add(song_key)
+            
+            lrclib_data = await lrclib_service.get_lyrics(track_name=pick.title, artist_name=pick.artist)
+            if lrclib_data:
+                break
     
     if not lrclib_data:
-        # Fallback: still return the pick and the static reason
-        return {"song": None, "reason": pick.fallback_reason, "source": "static"}
+        # Ultimate fallback: return static reason (should rarely happen)
+        return {"song": None, "reason": pick.fallback_reason if pick else "Song not found", "source": "static"}
 
     # Upsert song (same logic as /songs/import)
     title = lrclib_data.get("trackName") or pick.title
