@@ -63,6 +63,7 @@ export const userSongsApi = {
 export const analyzeApi = {
   line: (data) => client.post('/analyze/line', data),
   speak: (data) => client.post('/analyze/speak', data),
+  interlinear: (data) => client.post('/analyze/interlinear', data),
 }
 
 // Voice API (SPEC v5)
@@ -80,6 +81,11 @@ export const vocabularyApi = {
 // Exercises API
 export const exercisesApi = {
   checkTranslation: (data) => client.post('/exercises/translation-check', data),
+}
+
+// Discover API
+export const discoverApi = {
+  randomIconic: (params) => client.get('/discover/random-iconic', { params }),
 }
 
 export default client

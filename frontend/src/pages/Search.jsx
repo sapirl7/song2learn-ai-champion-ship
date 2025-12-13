@@ -1,15 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { songsApi } from '../api/client'
+import { songsApi, discoverApi } from '../api/client'
+import { useLang } from '../stores/useLang'
 import toast from 'react-hot-toast'
-import { Search as SearchIcon, Music, Plus, Loader2 } from 'lucide-react'
+import { Search as SearchIcon, Music, Plus, Loader2, Sparkles } from 'lucide-react'
 
 function Search() {
   const navigate = useNavigate()
+  const { learningLang } = useLang()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
   const [importingId, setImportingId] = useState(null)
+  const [isSurprising, setIsSurprising] = useState(false)
 
   const handleSearch = async (e) => {
     e.preventDefault()
@@ -47,11 +50,44 @@ function Search() {
     }
   }
 
+  const handleSurprise = async () => {
+    setIsSurprising(true)
+    try {
+      const res = await discoverApi.randomIconic({ learning_lang: learningLang })
+      const song = res.data?.song
+      const reason = res.data?.reason
+      if (!song?.id) {
+        toast.error(reason || 'Could not find a song right now. Try again.')
+        return
+      }
+      toast.success('Here’s a classic—imported for you!')
+      navigate(`/song/${song.id}`, { state: { discoverReason: reason, discoverSource: res.data?.source } })
+    } catch (error) {
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      toast.error(detail || (status ? `Surprise failed (${status})` : 'Surprise failed'))
+    } finally {
+      setIsSurprising(false)
+    }
+  }
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Find a Song</h1>
         <p className="text-gray-600">Search for songs to start learning</p>
+      </div>
+
+      <div className="flex items-center justify-center mb-4">
+        <button
+          type="button"
+          onClick={handleSurprise}
+          disabled={isSurprising}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+        >
+          {isSurprising ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+          Surprise me (iconic song)
+        </button>
       </div>
 
       {/* Search form */}

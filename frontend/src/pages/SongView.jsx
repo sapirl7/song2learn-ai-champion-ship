@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { songsApi, userSongsApi, analyzeApi, vocabularyApi, voiceApi } from '../api/client'
 import { useUser } from '../stores/useUser'
@@ -11,6 +11,7 @@ import {
   Volume2,
   Loader2,
   Plus,
+  X,
 } from 'lucide-react'
 
 const HOVER_DELAY = 150 // ms before triggering analysis on hover
@@ -18,6 +19,7 @@ const HOVER_DELAY = 150 // ms before triggering analysis on hover
 function SongView() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const queryClient = useQueryClient()
   const { user } = useUser()
   const { nativeLang, learningLang } = useLang()
@@ -29,6 +31,8 @@ function SongView() {
   const [analysis, setAnalysis] = useState(null)
   const [isSpeaking, setIsSpeaking] = useState(false)
   const [savingWord, setSavingWord] = useState(false)
+  const [showWhy, setShowWhy] = useState(true)
+  const [interlinearTokens, setInterlinearTokens] = useState(null)
 
   // Fetch song data
   const { data: song, isLoading: songLoading } = useQuery({
@@ -71,6 +75,27 @@ function SongView() {
       }
     },
   })
+
+  const interlinearMutation = useMutation({
+    mutationFn: ({ line, lineIndex }) =>
+      analyzeApi.interlinear({
+        line,
+        native_lang: nativeLang || user?.native_lang || 'en',
+        learning_lang: learningLang || user?.learning_lang || 'en',
+        song_id: parseInt(id),
+        line_index: lineIndex,
+      }),
+    onSuccess: (res) => setInterlinearTokens(res.data?.tokens || []),
+    onError: (error) => {
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      toast.error(detail || (status ? `Interlinear failed (${status})` : 'Interlinear failed'))
+    },
+  })
+
+  useEffect(() => {
+    setInterlinearTokens(null)
+  }, [selectedLine])
 
   // Parse lyrics into lines
   const lines = song?.lyrics?.split('\n').filter((line) => line.trim()) || []
@@ -207,6 +232,25 @@ function SongView() {
       {/* Hidden audio element */}
       <audio ref={audioRef} className="hidden" />
 
+      {showWhy && location?.state?.discoverReason && (
+        <div className="mb-6 bg-primary-50 border border-primary-200 rounded-xl p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-sm font-semibold text-primary-800 mb-1">Why this song is iconic</div>
+              <div className="text-sm text-primary-800">{location.state.discoverReason}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowWhy(false)}
+              className="p-2 text-primary-700 hover:text-primary-900"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -285,6 +329,46 @@ function SongView() {
                     </div>
                   ) : analysis ? (
                     <div className="space-y-4">
+                      <div className="flex items-center justify-end">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            if (interlinearTokens) {
+                              setInterlinearTokens(null)
+                              return
+                            }
+                            interlinearMutation.mutate({ line, lineIndex: index })
+                          }}
+                          disabled={interlinearMutation.isPending}
+                          className="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                        >
+                          {interlinearMutation.isPending
+                            ? 'Loading...'
+                            : interlinearTokens
+                              ? 'Hide interlinear'
+                              : 'Word-by-word'}
+                        </button>
+                      </div>
+
+                      {interlinearTokens && (
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                          <div className="flex flex-wrap gap-x-2 gap-y-2">
+                            {interlinearTokens.map((t, ti) => (
+                              <span
+                                key={ti}
+                                className="inline-flex items-baseline gap-1 px-2 py-1 bg-white border border-gray-200 rounded-lg"
+                              >
+                                <span className="font-semibold text-gray-900">{t.orig}</span>
+                                {t.trans ? (
+                                  <span className="text-sm text-primary-700">{t.trans}</span>
+                                ) : null}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
                       {/* Translation */}
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-1">
