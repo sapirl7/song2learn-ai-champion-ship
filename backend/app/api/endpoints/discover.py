@@ -37,9 +37,24 @@ async def random_iconic_song(
     if not native_lang:
         native_lang = (u.native_lang if u else "en") or "en"
 
-    pick = pick_iconic_song(learning_lang)
-
-    lrclib_data = await lrclib_service.get_lyrics(track_name=pick.title, artist_name=pick.artist)
+    # Try up to 3 different songs if LRCLIB doesn't find the first one
+    MAX_ATTEMPTS = 3
+    tried_songs = set()
+    lrclib_data = None
+    pick = None
+    
+    for _ in range(MAX_ATTEMPTS):
+        pick = pick_iconic_song(learning_lang)
+        song_key = (pick.title, pick.artist)
+        if song_key in tried_songs:
+            continue
+        tried_songs.add(song_key)
+        
+        lrclib_data = await lrclib_service.get_lyrics(track_name=pick.title, artist_name=pick.artist)
+        if lrclib_data:
+            break
+        logger.info("discover_song_not_found", title=pick.title, artist=pick.artist, attempt=len(tried_songs))
+    
     if not lrclib_data:
         # Fallback: still return the pick and the static reason
         return {"song": None, "reason": pick.fallback_reason, "source": "static"}
