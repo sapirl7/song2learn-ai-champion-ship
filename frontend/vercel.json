@@ -5,7 +5,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://song2learn-api.onrender.com/:path*"
+      "destination": "https://song2learn-api.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
