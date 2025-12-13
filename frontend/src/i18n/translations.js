@@ -491,6 +491,63 @@ export const translations = {
       pt: 'História da música', pl: 'Historia piosenki',
       zh: '歌曲背后的故事', hi: 'गाने की कहानी', ar: 'قصة الأغنية'
     },
+    whyIconic: {
+      en: 'Why this song is iconic', ru: 'Почему эта песня культовая',
+      fr: 'Pourquoi cette chanson est iconique', de: 'Warum dieses Lied ikonisch ist',
+      es: 'Por qué esta canción es icónica', pt: 'Por que esta música é icônica',
+      pl: 'Dlaczego ta piosenka jest kultowa', zh: '为什么这首歌是标志性的',
+      hi: 'यह गाना प्रतिष्ठित क्यों है', ar: 'لماذا هذه الأغنية مميزة'
+    },
+    saved: {
+      en: 'Saved', ru: 'Сохранено', fr: 'Enregistré', de: 'Gespeichert',
+      es: 'Guardado', pt: 'Salvo', pl: 'Zapisane', zh: '已保存', hi: 'सहेजा गया', ar: 'تم الحفظ'
+    },
+    notFound: {
+      en: 'Song not found', ru: 'Песня не найдена', fr: 'Chanson introuvable',
+      de: 'Lied nicht gefunden', es: 'Canción no encontrada', pt: 'Música não encontrada',
+      pl: 'Nie znaleziono piosenki', zh: '未找到歌曲', hi: 'गाना नहीं मिला', ar: 'الأغنية غير موجودة'
+    },
+    tip: {
+      en: 'Tip', ru: 'Подсказка', fr: 'Astuce', de: 'Tipp',
+      es: 'Consejo', pt: 'Dica', pl: 'Wskazówka', zh: '提示', hi: 'टिप', ar: 'نصيحة'
+    },
+    tipText: {
+      en: 'Hover over any line for instant analysis, or click to lock it. Use the speaker icon to hear pronunciation.',
+      ru: 'Наведите на строку для анализа или кликните чтобы закрепить. Используйте иконку динамика для произношения.',
+      fr: "Survolez une ligne pour l'analyser ou cliquez pour la verrouiller. Utilisez l'icône du haut-parleur pour écouter.",
+      de: 'Fahren Sie über eine Zeile für Analyse oder klicken Sie zum Fixieren. Verwenden Sie das Lautsprecher-Symbol zum Anhören.',
+      es: 'Pasa el cursor para analizar, o clic para fijar. Usa el icono del altavoz para escuchar.',
+      pt: 'Passe o mouse para análise ou clique para fixar. Use o ícone do alto-falante para ouvir.',
+      pl: 'Najedź na linię, aby ją analizować, lub kliknij, aby zablokować. Użyj ikony głośnika, aby posłuchać.',
+      zh: '悬停在行上进行分析，或点击锁定。使用扬声器图标收听发音。',
+      hi: 'विश्लेषण के लिए किसी पंक्ति पर होवर करें, या लॉक करने के लिए क्लिक करें। उच्चारण सुनने के लिए स्पीकर आइकन का उपयोग करें।',
+      ar: 'مرر فوق أي سطر للتحليل الفوري، أو انقر لتثبيته. استخدم أيقونة السماعة للاستماع.'
+    },
+    analyzing: {
+      en: 'Analyzing...', ru: 'Анализ...', fr: 'Analyse...', de: 'Analyse...',
+      es: 'Analizando...', pt: 'Analisando...', pl: 'Analizowanie...',
+      zh: '分析中...', hi: 'विश्लेषण...', ar: 'جار التحليل...'
+    },
+    wordByWord: {
+      en: 'Word-by-word', ru: 'Пословно', fr: 'Mot à mot', de: 'Wort für Wort',
+      es: 'Palabra por palabra', pt: 'Palavra por palavra', pl: 'Słowo po słowie',
+      zh: '逐词', hi: 'शब्द-दर-शब्द', ar: 'كلمة بكلمة'
+    },
+    hideInterlinear: {
+      en: 'Hide interlinear', ru: 'Скрыть', fr: 'Masquer', de: 'Ausblenden',
+      es: 'Ocultar', pt: 'Ocultar', pl: 'Ukryj',
+      zh: '隐藏', hi: 'छुपाएं', ar: 'إخفاء'
+    },
+    translation: {
+      en: 'Translation', ru: 'Перевод', fr: 'Traduction', de: 'Übersetzung',
+      es: 'Traducción', pt: 'Tradução', pl: 'Tłumaczenie',
+      zh: '翻译', hi: 'अनुवाद', ar: 'ترجمة'
+    },
+    saveToVocab: {
+      en: 'Save to vocabulary', ru: 'Сохранить в словарь', fr: 'Enregistrer dans le vocabulaire',
+      de: 'Zum Vokabular speichern', es: 'Guardar en vocabulario', pt: 'Salvar no vocabulário',
+      pl: 'Zapisz do słownika', zh: '保存到词汇表', hi: 'शब्दावली में सहेजें', ar: 'حفظ في المفردات'
+    },
   },
 
   // ============ LOGIN PAGE ============

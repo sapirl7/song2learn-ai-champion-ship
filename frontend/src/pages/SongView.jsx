@@ -231,7 +231,7 @@ function SongView() {
   if (!song) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Song not found</p>
+        <p className="text-gray-500">{t('song.notFound', uiLang)}</p>
       </div>
     )
   }
@@ -245,7 +245,7 @@ function SongView() {
         <div className="mb-6 bg-primary-50 border border-primary-200 rounded-xl p-4">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold text-primary-800 mb-1">Why this song is iconic</div>
+              <div className="text-sm font-semibold text-primary-800 mb-1">{t('song.whyIconic', uiLang)}</div>
               <div className="text-sm text-primary-800">{location.state.discoverReason}</div>
             </div>
             <button
@@ -267,18 +267,18 @@ function SongView() {
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <ArrowLeft className="w-5 h-5" />
-          Back
+          {t('common.back', uiLang)}
         </button>
         <button
           onClick={() => saveMutation.mutate()}
           disabled={saveMutation.isPending}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${isSaved
-              ? 'bg-red-50 text-red-600 hover:bg-red-100'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            ? 'bg-red-50 text-red-600 hover:bg-red-100'
+            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
         >
           <Heart className={`w-5 h-5 ${isSaved ? 'fill-current' : ''}`} />
-          {isSaved ? 'Saved' : 'Save'}
+          {isSaved ? t('song.saved', uiLang) : t('song.save', uiLang)}
         </button>
       </div>
 
@@ -346,8 +346,7 @@ function SongView() {
 
       {/* Instructions */}
       <div className="bg-primary-50 rounded-lg p-4 mb-6 text-sm text-primary-700">
-        <strong>Tip:</strong> Hover over any line for instant analysis, or click to lock it.
-        Use the speaker icon to hear pronunciation.
+        <strong>{t('song.tip', uiLang)}:</strong> {t('song.tipText', uiLang)}
       </div>
 
       {/* Lyrics */}
@@ -386,7 +385,7 @@ function SongView() {
                   {analyzeMutation.isPending ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
-                      <span className="ml-2 text-gray-500">Analyzing...</span>
+                      <span className="ml-2 text-gray-500">{t('song.analyzing', uiLang)}</span>
                     </div>
                   ) : analysis ? (
                     <div className="space-y-4">
@@ -405,10 +404,10 @@ function SongView() {
                           className="text-xs px-3 py-1 rounded-full border border-gray-200 text-gray-700 hover:bg-gray-50 disabled:opacity-50"
                         >
                           {interlinearMutation.isPending
-                            ? 'Loading...'
+                            ? t('common.loading', uiLang)
                             : interlinearTokens
-                              ? 'Hide interlinear'
-                              : 'Word-by-word'}
+                              ? t('song.hideInterlinear', uiLang)
+                              : t('song.wordByWord', uiLang)}
                         </button>
                       </div>
 
@@ -433,7 +432,7 @@ function SongView() {
                                     }}
                                     disabled={savingWord}
                                     className="ml-1 p-0.5 text-gray-400 hover:text-primary-500 disabled:opacity-50"
-                                    title="Save to vocabulary"
+                                    title={t('song.saveToVocab', uiLang)}
                                   >
                                     <Plus className="w-4 h-4" />
                                   </button>
@@ -447,7 +446,7 @@ function SongView() {
                       {/* Translation */}
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                          Translation
+                          {t('song.translation', uiLang)}
                         </h4>
                         <p className="text-gray-600">{analysis.translation}</p>
                       </div>
@@ -455,16 +454,15 @@ function SongView() {
                       {/* Grammar */}
                       <div>
                         <h4 className="text-sm font-semibold text-gray-700 mb-1">
-                          Grammar
+                          {t('song.grammar', uiLang)}
                         </h4>
                         <p className="text-gray-600 text-sm">{analysis.grammar}</p>
                       </div>
 
-                      {/* Vocabulary */}
                       {analysis.vocabulary?.length > 0 && (
                         <div>
                           <h4 className="text-sm font-semibold text-gray-700 mb-2">
-                            Vocabulary
+                            {t('common.vocabulary', uiLang)}
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {analysis.vocabulary.map((item, i) => (
@@ -491,7 +489,7 @@ function SongView() {
                                   }}
                                   disabled={savingWord}
                                   className="p-1 text-gray-400 hover:text-primary-500 transition-colors"
-                                  title="Save to vocabulary"
+                                  title={t('song.saveToVocab', uiLang)}
                                 >
                                   <Plus className="w-4 h-4" />
                                 </button>
