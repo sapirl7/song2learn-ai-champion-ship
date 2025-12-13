@@ -1,15 +1,10 @@
 import { create } from 'zustand'
+import { LANGUAGES as LANG_LIST } from '../i18n/translations'
 
 const STORAGE_KEY = 'lang_settings_v2'
 
-export const LANGUAGES = [
-  { code: 'en', name: 'English' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'pl', name: 'Polish' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'pt', name: 'Portuguese' },
-]
+// Re-export LANGUAGES for backward compatibility
+export const LANGUAGES = LANG_LIST
 
 function loadInitial() {
   try {
@@ -86,5 +81,3 @@ export const useLang = create((set, get) => {
     },
   }
 })
-
-

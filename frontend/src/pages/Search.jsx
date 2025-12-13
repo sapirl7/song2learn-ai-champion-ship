@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { songsApi, discoverApi } from '../api/client'
 import { useLang } from '../stores/useLang'
+import { t, getLangName } from '../i18n/translations'
 import toast from 'react-hot-toast'
-import { Search as SearchIcon, Music, Plus, Loader2, Sparkles } from 'lucide-react'
+import { Search as SearchIcon, Music, Plus, Loader2, Sparkles, HelpCircle } from 'lucide-react'
 
 function Search() {
   const navigate = useNavigate()
-  const { learningLang } = useLang()
+  const { learningLang, uiLang } = useLang()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
@@ -23,7 +24,7 @@ function Search() {
       const response = await songsApi.search(query)
       setResults(response.data)
       if (response.data.length === 0) {
-        toast('No songs found', { icon: '🔍' })
+        toast(t('search.noResults', uiLang), { icon: '🔍' })
       }
     } catch (error) {
       const status = error?.response?.status
@@ -60,7 +61,7 @@ function Search() {
         toast.error(reason || 'Could not find a song right now. Try again.')
         return
       }
-      toast.success('Here’s a classic—imported for you!')
+      toast.success('Here's a classic—imported for you!')
       navigate(`/song/${song.id}`, { state: { discoverReason: reason, discoverSource: res.data?.source } })
     } catch (error) {
       const status = error?.response?.status
@@ -71,22 +72,34 @@ function Search() {
     }
   }
 
+  // Get learning language name in UI language
+  const learningLangName = getLangName(learningLang, uiLang)
+  const surpriseText = t('search.surpriseMe', uiLang, { lang: learningLangName })
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Find a Song</h1>
-        <p className="text-gray-600">Search for songs to start learning</p>
+      <div className="text-center mb-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('search.title', uiLang)}</h1>
+        <p className="text-gray-600">{t('search.subtitle', uiLang)}</p>
       </div>
 
-      <div className="flex items-center justify-center mb-4">
+      {/* Help text */}
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <HelpCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-blue-700">{t('search.helpText', uiLang)}</p>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center mb-6">
         <button
           type="button"
           onClick={handleSurprise}
           disabled={isSurprising}
-          className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white font-medium rounded-lg hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-medium rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg disabled:opacity-50"
         >
-          {isSurprising ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          Surprise me (iconic song)
+          {isSurprising ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+          {surpriseText}
         </button>
       </div>
 
@@ -98,7 +111,7 @@ function Search() {
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by song title or artist..."
+            placeholder={t('search.placeholder', uiLang)}
             className="w-full pl-12 pr-32 py-4 text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
           <button
@@ -109,7 +122,7 @@ function Search() {
             {isSearching ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              'Search'
+              t('common.search', uiLang)
             )}
           </button>
         </div>
@@ -119,7 +132,7 @@ function Search() {
       {results.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold text-gray-700 mb-4">
-            Results ({results.length})
+            {t('search.results', uiLang)} ({results.length})
           </h2>
           {results.map((song) => (
             <div
@@ -148,7 +161,7 @@ function Search() {
                 ) : (
                   <Plus className="w-4 h-4" />
                 )}
-                Import
+                {t('common.import', uiLang)}
               </button>
             </div>
           ))}
@@ -159,9 +172,7 @@ function Search() {
       {results.length === 0 && !isSearching && (
         <div className="text-center py-16">
           <Music className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">
-            Search for a song to get started
-          </p>
+          <p className="text-gray-500">{t('search.emptyState', uiLang)}</p>
         </div>
       )}
     </div>

@@ -1,10 +1,13 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
+import { useLang } from '../stores/useLang'
+import { t } from '../i18n/translations'
 import { Search, Heart, BookOpen, GraduationCap, LogOut, Music, User } from 'lucide-react'
 import { LearningLanguageSelector, UiLanguageSelector } from './LanguageSelector'
 
 function Layout() {
   const { user, logout } = useUser()
+  const { uiLang } = useLang()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -13,10 +16,10 @@ function Layout() {
   }
 
   const navItems = [
-    { to: '/search', icon: Search, label: 'Search' },
-    { to: '/saved', icon: Heart, label: 'Saved' },
-    { to: '/vocabulary', icon: BookOpen, label: 'Vocabulary' },
-    { to: '/exercises', icon: GraduationCap, label: 'Exercises' },
+    { to: '/search', icon: Search, labelKey: 'common.search' },
+    { to: '/saved', icon: Heart, labelKey: 'common.saved' },
+    { to: '/vocabulary', icon: BookOpen, labelKey: 'common.vocabulary' },
+    { to: '/exercises', icon: GraduationCap, labelKey: 'common.exercises' },
   ]
 
   return (
@@ -51,7 +54,7 @@ function Layout() {
                   }
                 >
                   <item.icon className="w-4 h-4" />
-                  {item.label}
+                  {t(item.labelKey, uiLang)}
                 </NavLink>
               ))}
             </nav>
@@ -70,10 +73,10 @@ function Layout() {
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-1.5 px-2 py-1.5 text-sm text-gray-500 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors"
-                  title="Logout"
+                  title={t('common.logout', uiLang)}
                 >
                   <LogOut className="w-4 h-4" />
-                  <span className="hidden lg:inline">Logout</span>
+                  <span className="hidden lg:inline">{t('common.logout', uiLang)}</span>
                 </button>
               </div>
             </div>
@@ -97,7 +100,7 @@ function Layout() {
               }
             >
               <item.icon className="w-5 h-5" />
-              {item.label}
+              {t(item.labelKey, uiLang)}
             </NavLink>
           ))}
         </div>

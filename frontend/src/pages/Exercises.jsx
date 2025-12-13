@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { userSongsApi, songsApi, exercisesApi } from '../api/client'
+import { userSongsApi, exercisesApi } from '../api/client'
 import { useLang } from '../stores/useLang'
+import { t } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import {
   GraduationCap,
@@ -11,10 +12,11 @@ import {
   Loader2,
   RefreshCw,
   ChevronRight,
+  HelpCircle,
 } from 'lucide-react'
 
 function Exercises() {
-  const { nativeLang, learningLang } = useLang()
+  const { nativeLang, learningLang, uiLang } = useLang()
   const [songs, setSongs] = useState([])
   const [selectedSong, setSelectedSong] = useState(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
@@ -109,32 +111,40 @@ function Exercises() {
   if (!selectedSong) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center gap-3 mb-6">
           <GraduationCap className="w-8 h-8 text-primary-500" />
-          <h1 className="text-3xl font-bold text-gray-900">Translation Exercises</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{t('exercises.title', uiLang)}</h1>
+        </div>
+
+        {/* Help text */}
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <div className="flex items-start gap-3">
+            <HelpCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <p className="text-sm text-blue-700">{t('exercises.helpText', uiLang)}</p>
+          </div>
         </div>
 
         {songs.length === 0 ? (
           <div className="text-center py-16">
             <GraduationCap className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h2 className="text-xl font-medium text-gray-700 mb-2">
-              No songs to practice with
+              {t('exercises.noSongs', uiLang)}
             </h2>
             <p className="text-gray-500 mb-6">
-              Save some songs first to practice translation
+              {t('exercises.noSongsSubtitle', uiLang)}
             </p>
             <Link
               to="/search"
               className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
             >
               <Music className="w-5 h-5" />
-              Find Songs
+              {t('common.findSongs', uiLang)}
             </Link>
           </div>
         ) : (
           <>
             <p className="text-gray-600 mb-6">
-              Choose a song to practice translating its lyrics:
+              {t('exercises.chooseSong', uiLang)}
             </p>
             <div className="grid gap-3">
               {songs.map((song) => (
@@ -171,14 +181,14 @@ function Exercises() {
           onClick={() => setSelectedSong(null)}
           className="text-gray-600 hover:text-gray-900"
         >
-          ← Back to songs
+          {t('exercises.backToSongs', uiLang)}
         </button>
         <button
           onClick={resetExercise}
           className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
         >
           <RefreshCw className="w-4 h-4" />
-          Reset
+          {t('common.reset', uiLang)}
         </button>
       </div>
 
@@ -191,7 +201,7 @@ function Exercises() {
       {/* Progress */}
       <div className="mb-6">
         <div className="flex justify-between text-sm text-gray-500 mb-2">
-          <span>Line {currentLineIndex + 1} of {lines.length}</span>
+          <span>{t('exercises.lineOf', uiLang, { current: currentLineIndex + 1, total: lines.length })}</span>
           <span>{Math.round(((currentLineIndex + 1) / lines.length) * 100)}%</span>
         </div>
         <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
@@ -204,7 +214,7 @@ function Exercises() {
 
       {/* Current line */}
       <div className="bg-white rounded-xl p-6 mb-6 shadow-sm border">
-        <p className="text-sm text-gray-500 mb-2">Translate this line:</p>
+        <p className="text-sm text-gray-500 mb-2">{t('exercises.translate', uiLang)}</p>
         <p className="text-xl font-medium text-gray-900">{currentLine}</p>
       </div>
 
@@ -213,7 +223,7 @@ function Exercises() {
         <textarea
           value={userTranslation}
           onChange={(e) => setUserTranslation(e.target.value)}
-          placeholder="Type your translation here..."
+          placeholder={t('exercises.typePlaceholder', uiLang)}
           className="w-full p-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
           rows={3}
           disabled={isChecking}
@@ -226,10 +236,10 @@ function Exercises() {
           {isChecking ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="w-5 h-5 animate-spin" />
-              Checking...
+              {t('exercises.checking', uiLang)}
             </span>
           ) : (
-            'Check Translation'
+            t('exercises.checkTranslation', uiLang)
           )}
         </button>
       </form>
@@ -255,11 +265,11 @@ function Exercises() {
                   feedback.is_correct ? 'text-green-700' : 'text-orange-700'
                 }`}
               >
-                {feedback.is_correct ? 'Correct!' : 'Not quite right'}
+                {feedback.is_correct ? t('exercises.correct', uiLang) : t('exercises.notQuite', uiLang)}
               </h3>
               <p className="text-gray-600 mb-3">{feedback.feedback}</p>
               <div className="bg-white rounded-lg p-3">
-                <p className="text-sm text-gray-500 mb-1">Suggested translation:</p>
+                <p className="text-sm text-gray-500 mb-1">{t('exercises.suggestedTranslation', uiLang)}</p>
                 <p className="text-gray-900">{feedback.suggested_translation}</p>
               </div>
             </div>
@@ -274,14 +284,14 @@ function Exercises() {
           disabled={currentLineIndex === 0}
           className="flex-1 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50"
         >
-          Previous
+          {t('common.previous', uiLang)}
         </button>
         <button
           onClick={nextLine}
           disabled={currentLineIndex === lines.length - 1}
           className="flex-1 py-3 bg-gray-900 text-white font-medium rounded-xl hover:bg-gray-800 transition-colors disabled:opacity-50"
         >
-          Next Line
+          {t('exercises.nextLine', uiLang)}
         </button>
       </div>
     </div>

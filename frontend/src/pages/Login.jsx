@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
+import { useLang } from '../stores/useLang'
+import { t } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import { Music, Mail, Lock, Sparkles } from 'lucide-react'
 
 function Login() {
   const navigate = useNavigate()
   const { login, demoLogin } = useUser()
+  const { uiLang } = useLang()
   const [isLoading, setIsLoading] = useState(false)
   const [isDemoLoading, setIsDemoLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -58,7 +61,7 @@ function Login() {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
+              {t('login.email', uiLang)}
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -75,7 +78,7 @@ function Login() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
+              {t('login.password', uiLang)}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -95,7 +98,7 @@ function Login() {
             disabled={isLoading}
             className="w-full py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Signing in...' : 'Sign in'}
+            {isLoading ? t('common.loading', uiLang) : t('login.title', uiLang)}
           </button>
         </form>
 
@@ -105,7 +108,7 @@ function Login() {
             <div className="w-full border-t border-gray-200"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-white text-gray-500">or</span>
+            <span className="px-4 bg-white text-gray-500">{t('common.or', uiLang)}</span>
           </div>
         </div>
 
@@ -116,16 +119,16 @@ function Login() {
           className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
         >
           <Sparkles className="w-6 h-6" />
-          {isDemoLoading ? 'Loading...' : 'Demo Access (For Judges)'}
+          {isDemoLoading ? t('common.loading', uiLang) : t('login.demoAccess', uiLang)}
         </button>
         <p className="mt-2 text-center text-sm text-gray-500">
-          One click to explore the app
+          {t('login.oneClick', uiLang)}
         </p>
 
         <p className="mt-6 text-center text-gray-600">
-          Don't have an account?{' '}
+          {t('login.noAccount', uiLang)}{' '}
           <Link to="/register" className="text-primary-500 hover:text-primary-600 font-medium">
-            Sign up
+            {t('login.signUp', uiLang)}
           </Link>
         </p>
       </div>
