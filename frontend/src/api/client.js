@@ -97,9 +97,9 @@ export const exercisesApi = {
   checkTranslation: (data) => client.post('/exercises/translation-check', data),
 }
 
-// Discover API
+// Discover API (longer timeout for LRCLIB + Cerebras)
 export const discoverApi = {
-  randomIconic: (params) => client.get('/discover/random-iconic', { params }),
+  randomIconic: (params) => client.get('/discover/random-iconic', { params, timeout: 30000 }),
 }
 
 export default client
