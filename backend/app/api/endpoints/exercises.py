@@ -27,6 +27,8 @@ async def check_translation(
     result = await cerebras_service.check_translation(
         original=data.original,
         user_translation=data.user_translation,
+        native_lang=data.native_lang or "en",
+        learning_lang=data.learning_lang or "en",
     )
 
     logger.info(
@@ -36,4 +38,14 @@ async def check_translation(
         is_correct=result.get("is_correct", False),
     )
 
-    return TranslationCheckResponse(**result)
+    # Cerebras returns "correct_translation" but API contract expects "suggested_translation".
+    suggested = (
+        result.get("suggested_translation")
+        or result.get("correct_translation")
+        or ""
+    )
+    return TranslationCheckResponse(
+        is_correct=bool(result.get("is_correct", False)),
+        feedback=str(result.get("feedback", "")),
+        suggested_translation=str(suggested),
+    )

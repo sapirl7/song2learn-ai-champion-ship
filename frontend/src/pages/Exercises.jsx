@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { userSongsApi, songsApi, exercisesApi } from '../api/client'
+import { useLang } from '../stores/useLang'
 import toast from 'react-hot-toast'
 import {
   GraduationCap,
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react'
 
 function Exercises() {
+  const { nativeLang, learningLang } = useLang()
   const [songs, setSongs] = useState([])
   const [selectedSong, setSelectedSong] = useState(null)
   const [currentLineIndex, setCurrentLineIndex] = useState(0)
@@ -60,10 +62,14 @@ function Exercises() {
         line_index: currentLineIndex,
         original: currentLine,
         user_translation: userTranslation,
+        native_lang: nativeLang,
+        learning_lang: learningLang,
       })
       setFeedback(response.data)
     } catch (error) {
-      toast.error('Failed to check translation')
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      toast.error(detail || (status ? `Failed to check translation (${status})` : 'Failed to check translation'))
     } finally {
       setIsChecking(false)
     }

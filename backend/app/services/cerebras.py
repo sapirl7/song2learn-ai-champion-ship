@@ -123,6 +123,14 @@ JSON only:
 """
 
         try:
+            if not self.api_key:
+                # Graceful fallback (so frontend doesn't crash)
+                return {
+                    "is_correct": False,
+                    "score": 0.0,
+                    "correct_translation": "",
+                    "feedback": "Check unavailable (AI not configured)",
+                }
             client = get_http_client()
             resp = await client.post(
                 CEREBRAS_URL,
