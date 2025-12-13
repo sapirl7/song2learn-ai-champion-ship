@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').trim()
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -13,7 +13,13 @@ const client = axios.create({
 client.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`
+    // Axios may represent headers as a plain object or as AxiosHeaders (with .set()).
+    if (!config.headers) config.headers = {}
+    if (typeof config.headers.set === 'function') {
+      config.headers.set('Authorization', `Bearer ${token}`)
+    } else {
+      config.headers.Authorization = `Bearer ${token}`
+    }
   }
   return config
 })
@@ -22,7 +28,8 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // FastAPI's HTTPBearer returns 403 on missing/invalid token; handle both.
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('token')
       window.location.href = '/login'
     }

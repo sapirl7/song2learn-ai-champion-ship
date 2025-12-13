@@ -23,7 +23,9 @@ function Search() {
         toast('No songs found', { icon: '🔍' })
       }
     } catch (error) {
-      toast.error('Search failed')
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      toast.error(detail || (status ? `Search failed (${status})` : 'Search failed'))
     } finally {
       setIsSearching(false)
     }
