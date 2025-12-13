@@ -47,6 +47,16 @@ class VoiceService:
         language: Optional[str] = None,
         speed: Optional[float] = None,
     ) -> str:
+        # Fail fast with a clear message if server-side voice isn't configured.
+        if not settings.ELEVENLABS_API_KEY:
+            raise RuntimeError("ELEVENLABS_API_KEY is not set")
+        if not settings.VULTR_S3_ACCESS_KEY or not settings.VULTR_S3_SECRET_KEY:
+            raise RuntimeError("VULTR_S3_ACCESS_KEY/VULTR_S3_SECRET_KEY are not set")
+        if not settings.VULTR_S3_BUCKET:
+            raise RuntimeError("VULTR_S3_BUCKET is not set")
+        if not settings.VULTR_S3_REGION:
+            raise RuntimeError("VULTR_S3_REGION is not set")
+
         text = (text or "")[:MAX_TEXT_LENGTH]
         lang = (language or "en").lower()
         spd = 1.0 if speed is None else float(speed)
@@ -75,7 +85,7 @@ class VoiceService:
             client = get_http_client()
             response = await client.post(
                 f"{self.base_url}/text-to-speech/{vid}",
-                headers={"xi-api-key": self.api_key, "Content-Type": "application/json"},
+                headers={"xi-api-key": settings.ELEVENLABS_API_KEY, "Content-Type": "application/json"},
                 json={
                     "text": text,
                     "model_id": "eleven_multilingual_v2",
