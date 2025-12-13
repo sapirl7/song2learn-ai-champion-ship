@@ -38,6 +38,13 @@ export const useUser = create((set) => ({
     return response.data
   },
 
+  demoLogin: async () => {
+    const response = await authApi.demoLogin()
+    localStorage.setItem('token', response.data.access_token)
+    await useUser.getState().fetchUser()
+    return response.data
+  },
+
   logout: () => {
     localStorage.removeItem('token')
     set({ user: null, isAuthenticated: false })
