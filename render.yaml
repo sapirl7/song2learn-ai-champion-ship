@@ -44,27 +44,6 @@ services:
         # Comma-separated CIDRs/IPs (optional). If unset, backend uses defaults.
         value: 127.0.0.1,10.0.0.0/8,172.16.0.0/12
 
-  # Frontend
-  - type: web
-    name: song2learn-frontend
-    runtime: static
-    region: frankfurt
-    plan: free
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
-    headers:
-      - path: /*
-        name: Cache-Control
-        value: public, max-age=0, must-revalidate
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    envVars:
-      - key: VITE_API_URL
-        # IMPORTANT: backend API is mounted under /api
-        value: https://song2learn-api.onrender.com/api
-
 databases:
   - name: song2learn-db
     plan: free
