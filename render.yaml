@@ -40,6 +40,9 @@ services:
         value: 60/minute
       - key: RATE_LIMIT_VOICE
         value: 20/minute
+      - key: TRUSTED_PROXIES
+        # Comma-separated CIDRs/IPs (optional). If unset, backend uses defaults.
+        value: 127.0.0.1,10.0.0.0/8,172.16.0.0/12
 
   # Frontend
   - type: web
@@ -59,7 +62,8 @@ services:
         destination: /index.html
     envVars:
       - key: VITE_API_URL
-        value: https://song2learn-api.onrender.com
+        # IMPORTANT: backend API is mounted under /api
+        value: https://song2learn-api.onrender.com/api
 
 databases:
   - name: song2learn-db

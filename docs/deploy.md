@@ -133,3 +133,4 @@ Most common cause:
 - Root Directory not set to `backend`, so Render tries to auto-detect from repo root.
 
 
+Review render.yaml configurations from sapirl7/song2learn-ai-champion-ship.
