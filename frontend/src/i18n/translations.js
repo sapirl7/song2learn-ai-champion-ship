@@ -570,10 +570,10 @@ export const translations = {
       pt: 'Senha', pl: 'Hasło', zh: '密码', hi: 'पासवर्ड', ar: 'كلمة المرور'
     },
     demoAccess: {
-      en: 'Demo Access (For Judges)', ru: 'Демо доступ (Для жюри)', fr: 'Accès démo (Pour les juges)',
-      de: 'Demo-Zugang (Für Juroren)', es: 'Acceso demo (Para jueces)', pt: 'Acesso demo (Para jurados)',
-      pl: 'Dostęp demo (Dla jurorów)', zh: '演示访问（评委专用）', hi: 'डेमो एक्सेस (न्यायाधीशों के लिए)',
-      ar: 'وصول تجريبي (للحكام)'
+      en: 'Demo Access', ru: 'Демо доступ', fr: 'Accès démo',
+      de: 'Demo-Zugang', es: 'Acceso demo', pt: 'Acesso demo',
+      pl: 'Dostęp demo', zh: '演示访问', hi: 'डेमो एक्सेस',
+      ar: 'وصول تجريبي'
     },
     oneClick: {
       en: 'One click to explore the app', ru: 'Один клик для доступа к приложению', fr: 'Un clic pour explorer l\'app',
