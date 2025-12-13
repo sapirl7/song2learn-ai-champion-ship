@@ -55,6 +55,36 @@ ICONIC_SONGS: Dict[str, List[IconicSong]] = {
         IconicSong("Evidências", "Chitãozinho & Xororó", "A huge sing-along staple in Brazil with memorable lines."),
         IconicSong("Pais e Filhos", "Legião Urbana", "A famous Brazilian rock song with strong cultural resonance."),
     ],
+    "es": [
+        IconicSong("Clandestino", "Manu Chao", "A global hit that blends Spanish lyrics with catchy melodies about migration."),
+        IconicSong("La Bamba", "Ritchie Valens", "A rock adaptation of a Mexican folk song, iconic worldwide."),
+        IconicSong("Despacito", "Luis Fonsi", "A record-breaking Latin pop song with simple, repetitive lyrics."),
+        IconicSong("Bailando", "Enrique Iglesias", "A massively popular Spanish dance song with clear pronunciation."),
+        IconicSong("Ojalá", "Silvio Rodríguez", "A beloved Cuban nueva trova song with poetic Spanish lyrics."),
+        IconicSong("Me gustas tú", "Manu Chao", "A catchy song perfect for learning common Spanish phrases."),
+        IconicSong("La Camisa Negra", "Juanes", "A Colombian rock hit with memorable chorus and clear diction."),
+    ],
+    "zh": [
+        IconicSong("月亮代表我的心", "邓丽君", "A classic Mandarin love song known across Chinese-speaking world."),
+        IconicSong("朋友", "周华健", "A friendship anthem often sung at gatherings in Chinese culture."),
+        IconicSong("童年", "罗大佑", "A nostalgic song about childhood with simple, clear lyrics."),
+        IconicSong("海阔天空", "Beyond", "A Cantonese rock anthem about dreams and perseverance."),
+        IconicSong("小苹果", "筷子兄弟", "A viral modern Chinese pop song with catchy, repetitive phrases."),
+    ],
+    "hi": [
+        IconicSong("Chaiyya Chaiyya", "A.R. Rahman", "An iconic Bollywood song known for its energy and memorable hook."),
+        IconicSong("Kal Ho Naa Ho", "Sonu Nigam", "A beloved Hindi song about living in the moment."),
+        IconicSong("Tujhe Dekha To", "Kumar Sanu", "A classic romantic Bollywood song known by generations."),
+        IconicSong("Kajra Re", "Shankar-Ehsaan-Loy", "A fun Bollywood dance number with catchy lyrics."),
+        IconicSong("Lag Ja Gale", "Lata Mangeshkar", "A timeless Hindi classic with beautiful, clear pronunciation."),
+    ],
+    "ar": [
+        IconicSong("Ahwak", "Abdel Halim Hafez", "A legendary Arabic love song from Egyptian golden age of music."),
+        IconicSong("Ana Baashaq El Bahr", "Fairuz", "A beloved Lebanese song with poetic Arabic lyrics."),
+        IconicSong("Habibi Ya Nour El Ain", "Amr Diab", "A modern Arabic pop classic known across the Arab world."),
+        IconicSong("Enta Omri", "Umm Kulthum", "One of the most famous Arabic songs ever recorded."),
+        IconicSong("3 Daqat", "Abu", "A contemporary Arabic hit with romantic, singable lyrics."),
+    ],
 }
 
 
