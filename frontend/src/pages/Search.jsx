@@ -61,7 +61,7 @@ function Search() {
         toast.error(reason || 'Could not find a song right now. Try again.')
         return
       }
-      toast.success('Here's a classic—imported for you!')
+      toast.success("Here's a classic—imported for you!")
       navigate(`/song/${song.id}`, { state: { discoverReason: reason, discoverSource: res.data?.source } })
     } catch (error) {
       const status = error?.response?.status
