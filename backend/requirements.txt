@@ -11,6 +11,9 @@ alembic==1.13.1
 # Authentication
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+# passlib 1.7.4 is not compatible with newer bcrypt releases (4+/5+).
+# Pin bcrypt to a compatible version to avoid runtime failures in hashing.
+bcrypt==3.2.2
 
 # HTTP client
 httpx==0.26.0
