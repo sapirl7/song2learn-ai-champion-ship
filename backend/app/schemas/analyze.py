@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel
 
 
@@ -25,3 +25,22 @@ class SpeakRequest(BaseModel):
 
 class SpeakResponse(BaseModel):
     audio_url: str
+
+
+class InterlinearRequest(BaseModel):
+    line: str
+    native_lang: Optional[str] = "en"
+    learning_lang: Optional[str] = "en"
+    song_id: int = 0
+    line_index: int = 0
+
+
+class InterlinearToken(BaseModel):
+    orig: str
+    trans: str
+
+
+class InterlinearResponse(BaseModel):
+    tokens: List[InterlinearToken]
+    cached: bool = False
+    latency_ms: int = 0
