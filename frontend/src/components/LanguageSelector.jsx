@@ -35,35 +35,42 @@ export function LearningLanguageSelector({ user }) {
   }, [user, seedFromUser])
 
   return (
-    <div className="flex items-center gap-2 px-3 py-1.5 bg-primary-50 border border-primary-200 rounded-full">
-      <span className="text-xs text-primary-600 font-medium hidden sm:inline">{t('common.iLearn', uiLang)}:</span>
-      <select
-        value={learningLang}
-        onChange={(e) => setLearningLang(e.target.value)}
-        className="bg-transparent text-sm font-medium text-primary-700 cursor-pointer focus:outline-none"
-        aria-label="Language you're learning"
-        title={t('common.iLearnTooltip', uiLang)}
-      >
-        {LANGUAGES.map((l) => (
-          <option key={l.code} value={l.code}>
-            {getLangName(l.code, uiLang)}
-          </option>
-        ))}
-      </select>
-      <span className="text-xs text-primary-500 hidden sm:inline">→ {t('common.translateTo', uiLang)}</span>
-      <select
-        value={nativeLang}
-        onChange={(e) => setNativeLang(e.target.value)}
-        className="bg-transparent text-sm font-medium text-primary-700 cursor-pointer focus:outline-none"
-        aria-label="Translation language"
-        title={t('common.translateToTooltip', uiLang)}
-      >
-        {LANGUAGES.map((l) => (
-          <option key={l.code} value={l.code}>
-            {getLangName(l.code, uiLang)}
-          </option>
-        ))}
-      </select>
+    <div className="flex items-center gap-1 px-2 py-1 bg-primary-50 border border-primary-200 rounded-full">
+      {/* Learning language */}
+      <div className="flex flex-col items-center">
+        <span className="text-[9px] text-primary-500 font-medium leading-none">{t('common.iLearn', uiLang)}</span>
+        <select
+          value={learningLang}
+          onChange={(e) => setLearningLang(e.target.value)}
+          className="bg-transparent text-sm font-semibold text-primary-700 cursor-pointer focus:outline-none"
+          aria-label="Language you're learning"
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {getLangName(l.code, uiLang)}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <ArrowRight className="w-4 h-4 text-primary-300 flex-shrink-0 mx-1" />
+
+      {/* Translation language */}
+      <div className="flex flex-col items-center">
+        <span className="text-[9px] text-primary-500 font-medium leading-none">{t('common.translateTo', uiLang)}</span>
+        <select
+          value={nativeLang}
+          onChange={(e) => setNativeLang(e.target.value)}
+          className="bg-transparent text-sm font-semibold text-primary-700 cursor-pointer focus:outline-none"
+          aria-label="Translation language"
+        >
+          {LANGUAGES.map((l) => (
+            <option key={l.code} value={l.code}>
+              {getLangName(l.code, uiLang)}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   )
 }
