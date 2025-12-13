@@ -41,8 +41,10 @@ In Render Dashboard:
 
 > Important: Root Directory must be `backend` to avoid accidental Node app detection from the repo root.
 >
-> Important: ensure Render uses **Python 3.12 (or 3.11)**. Some dependencies (e.g. `pydantic-core` for older `pydantic` pins)
+> Important: ensure Render uses **Python 3.12.x (or 3.11.x)**. Some dependencies (e.g. `pydantic-core` for older `pydantic` pins)
 > may not provide wheels for the newest Python (3.13) and will try to compile from source during deploy.
+>
+> Render requires `PYTHON_VERSION` as a full **major.minor.patch** value (e.g. `3.12.4`), not just `3.12`.
 
 ### 2.2 Environment variables (Render)
 
