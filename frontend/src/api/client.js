@@ -34,6 +34,7 @@ client.interceptors.response.use(
 export const authApi = {
   register: (data) => client.post('/auth/register', data),
   login: (data) => client.post('/auth/login', data),
+  demoLogin: () => client.post('/auth/demo-login'),
   getMe: () => client.get('/auth/me'),
 }
 

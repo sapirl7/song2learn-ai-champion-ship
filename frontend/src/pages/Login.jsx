@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
 import toast from 'react-hot-toast'
-import { Music, Mail, Lock } from 'lucide-react'
+import { Music, Mail, Lock, Sparkles } from 'lucide-react'
 
 function Login() {
   const navigate = useNavigate()
-  const { login } = useUser()
+  const { login, demoLogin } = useUser()
   const [isLoading, setIsLoading] = useState(false)
+  const [isDemoLoading, setIsDemoLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,6 +26,20 @@ function Login() {
       toast.error(error.response?.data?.detail || 'Login failed')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleDemoLogin = async () => {
+    setIsDemoLoading(true)
+
+    try {
+      await demoLogin()
+      toast.success('Welcome, Judge! Explore the app.')
+      navigate('/search')
+    } catch (error) {
+      toast.error('Demo login failed')
+    } finally {
+      setIsDemoLoading(false)
     }
   }
 
@@ -84,6 +99,29 @@ function Login() {
             {isLoading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+
+        {/* Divider */}
+        <div className="relative my-6">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-4 bg-white text-gray-500">or</span>
+          </div>
+        </div>
+
+        {/* Demo Login Button */}
+        <button
+          onClick={handleDemoLogin}
+          disabled={isDemoLoading}
+          className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-lg rounded-xl hover:from-amber-600 hover:to-orange-600 transition-all transform hover:scale-[1.02] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3"
+        >
+          <Sparkles className="w-6 h-6" />
+          {isDemoLoading ? 'Loading...' : 'Demo Access (For Judges)'}
+        </button>
+        <p className="mt-2 text-center text-sm text-gray-500">
+          One click to explore the app
+        </p>
 
         <p className="mt-6 text-center text-gray-600">
           Don't have an account?{' '}

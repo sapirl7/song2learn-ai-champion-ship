@@ -61,6 +61,34 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     return TokenResponse(access_token=access_token)
 
 
+@router.post("/demo-login", response_model=TokenResponse)
+async def demo_login(db: AsyncSession = Depends(get_db)):
+    """Demo login for hackathon judges - no password required."""
+    demo_email = "demo@song2learn.org"
+
+    # Check if demo user exists
+    result = await db.execute(select(User).where(User.email == demo_email))
+    user = result.scalar_one_or_none()
+
+    if not user:
+        # Create demo user on the fly
+        user = User(
+            email=demo_email,
+            password_hash=get_password_hash("demo-judge-2024"),  # Placeholder password
+            native_lang="en",
+            learning_lang="es",
+        )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        logger.info("demo_user_created", user_id=user.id)
+
+    logger.info("demo_login", user_id=user.id)
+
+    access_token = create_access_token(data={"sub": str(user.id)})
+    return TokenResponse(access_token=access_token)
+
+
 @router.get("/me", response_model=UserResponse)
 async def get_me(
     user_id = Depends(get_current_user_id),

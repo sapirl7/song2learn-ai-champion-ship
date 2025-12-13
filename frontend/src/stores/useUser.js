@@ -31,6 +31,13 @@ export const useUser = create((set) => ({
     return response.data
   },
 
+  demoLogin: async () => {
+    const response = await authApi.demoLogin()
+    localStorage.setItem('token', response.data.access_token)
+    await useUser.getState().fetchUser()
+    return response.data
+  },
+
   register: async (data) => {
     const response = await authApi.register(data)
     localStorage.setItem('token', response.data.access_token)
