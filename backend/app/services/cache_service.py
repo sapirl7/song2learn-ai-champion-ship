@@ -1,17 +1,26 @@
-import hashlib
+from typing import Optional, Any
 from cachetools import TTLCache
+import threading
+import hashlib
 
-
-# Cache for analysis results (TTL: 1 hour, max 1000 entries)
-analysis_cache: TTLCache = TTLCache(maxsize=1000, ttl=3600)
+_cache = TTLCache(maxsize=1000, ttl=3600)
+_lock = threading.Lock()
 
 
 def make_analysis_key(song_id: int, line_index: int, line: str, native_lang: str) -> str:
-    """
-    Generate cache key with 16-char hash to minimize collision risk.
-
-    Uses SHA256 for better distribution compared to MD5.
-    Key format: analysis:{song_id}:{line_index}:{line_hash}:{native_lang}
-    """
+    """Cache key with 16-char sha256 hash to minimize collision risk."""
     line_hash = hashlib.sha256(line.lower().strip().encode()).hexdigest()[:16]
     return f"analysis:{song_id}:{line_index}:{line_hash}:{native_lang}"
+
+
+class CacheService:
+    def get(self, key: str) -> Optional[Any]:
+        with _lock:
+            return _cache.get(key)
+
+    def set(self, key: str, value: Any) -> None:
+        with _lock:
+            _cache[key] = value
+
+
+cache_service = CacheService()

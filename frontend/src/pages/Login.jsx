@@ -31,7 +31,6 @@ function Login() {
 
   const handleDemoLogin = async () => {
     setIsDemoLoading(true)
-
     try {
       await demoLogin()
       toast.success('Welcome, Judge! Explore the app.')

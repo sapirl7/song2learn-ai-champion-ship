@@ -74,7 +74,7 @@ async def demo_login(db: AsyncSession = Depends(get_db)):
         # Create demo user on the fly
         user = User(
             email=demo_email,
-            password_hash=get_password_hash("demo-judge-2024"),  # Placeholder password
+            password_hash=get_password_hash("demo-judge-2024"),
             native_lang="en",
             learning_lang="es",
         )
