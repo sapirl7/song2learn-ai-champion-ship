@@ -42,7 +42,7 @@ class Settings(BaseSettings):
     # Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
-    DEBUG: bool = True
+    DEBUG: bool = False  # Set to True in .env for development
 
     @property
     def vultr_endpoint_url(self) -> str:

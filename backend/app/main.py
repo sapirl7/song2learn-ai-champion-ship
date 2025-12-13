@@ -65,6 +65,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# GZip compression for responses > 1KB
+from starlette.middleware.gzip import GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
+
 # Include API routes
 app.include_router(api_router)
 

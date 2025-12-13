@@ -1,11 +1,23 @@
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 
 const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').trim()
 
 const client = axios.create({
   baseURL: API_BASE_URL,
+  timeout: 15000, // 15 seconds
   headers: {
     'Content-Type': 'application/json',
+  },
+})
+
+// Retry logic for network errors and 5xx responses
+axiosRetry(client, {
+  retries: 2,
+  retryDelay: axiosRetry.exponentialDelay,
+  retryCondition: (error) => {
+    return axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+      (error.response?.status >= 500 && error.response?.status < 600)
   },
 })
 
