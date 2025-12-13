@@ -101,6 +101,11 @@ export const translations = {
       es: 'La traducción se mostrará en este idioma', pt: 'A tradução será mostrada neste idioma',
       pl: 'Tłumaczenie będzie w tym języku', zh: '翻译将以此语言显示', hi: 'अनुवाद इस भाषा में दिखाया जाएगा', ar: 'ستظهر الترجمة بهذه اللغة'
     },
+    translateTo: {
+      en: 'translate to', ru: 'на', fr: 'traduire en', de: 'übersetzen in',
+      es: 'traducir a', pt: 'traduzir para', pl: 'tłumacz na',
+      zh: '翻译成', hi: 'में अनुवाद करें', ar: 'ترجم إلى'
+    },
   },
 
   // ============ SEARCH PAGE ============

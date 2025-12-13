@@ -50,7 +50,7 @@ export function LearningLanguageSelector({ user }) {
           </option>
         ))}
       </select>
-      <ArrowRight className="w-4 h-4 text-primary-400" />
+      <span className="text-xs text-primary-500 hidden sm:inline">→ {t('common.translateTo', uiLang)}</span>
       <select
         value={nativeLang}
         onChange={(e) => setNativeLang(e.target.value)}
