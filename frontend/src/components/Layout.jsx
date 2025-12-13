@@ -52,9 +52,9 @@ function Layout() {
             </nav>
 
             {/* User menu */}
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center justify-end gap-2">
               <LanguageSelector user={user} />
-              <span className="text-sm text-gray-600">{user?.email}</span>
+              <span className="hidden sm:inline text-sm text-gray-600">{user?.email}</span>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-2 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-100"
