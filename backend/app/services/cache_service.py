@@ -13,6 +13,12 @@ def make_analysis_key(song_id: int, line_index: int, line: str, native_lang: str
     return f"analysis:{song_id}:{line_index}:{line_hash}:{native_lang}"
 
 
+def make_interlinear_key(song_id: int, line_index: int, line: str, native_lang: str, learning_lang: str) -> str:
+    """Cache key for interlinear word-by-word translations."""
+    line_hash = hashlib.sha256(line.lower().strip().encode()).hexdigest()[:16]
+    return f"interlinear:{song_id}:{line_index}:{line_hash}:{learning_lang}:{native_lang}"
+
+
 class CacheService:
     def get(self, key: str) -> Optional[Any]:
         with _lock:

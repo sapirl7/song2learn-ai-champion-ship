@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.endpoints import auth, songs, user_songs, analyze, vocabulary, exercises, voice
+from app.api.endpoints import auth, songs, user_songs, analyze, vocabulary, exercises, voice, discover
 
 api_router = APIRouter(prefix="/api")
 
@@ -11,3 +11,4 @@ api_router.include_router(analyze.router)
 api_router.include_router(vocabulary.router)
 api_router.include_router(exercises.router)
 api_router.include_router(voice.router)
+api_router.include_router(discover.router)
