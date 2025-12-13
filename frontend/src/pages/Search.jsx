@@ -54,7 +54,7 @@ function Search() {
   const handleSurprise = async () => {
     setIsSurprising(true)
     try {
-      const res = await discoverApi.randomIconic({ learning_lang: learningLang })
+      const res = await discoverApi.randomIconic({ learning_lang: learningLang, native_lang: nativeLang })
       const song = res.data?.song
       const reason = res.data?.reason
       if (!song?.id) {

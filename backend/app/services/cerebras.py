@@ -158,7 +158,7 @@ JSON only:
             logger.error("cerebras_check_error", error=str(e))
             return {"is_correct": False, "score": 0.0, "correct_translation": "", "feedback": "Check unavailable"}
 
-    async def describe_iconic_song(self, title: str, artist: str, learning_lang: str = "en") -> str:
+    async def describe_iconic_song(self, title: str, artist: str, target_lang: str = "en") -> str:
         """
         Short explanation (2-3 sentences) why a song is considered iconic/cult in its culture.
         Returns empty string on failure.
@@ -167,7 +167,7 @@ JSON only:
             return ""
         prompt = f"""Explain (2-3 sentences) why this song is considered iconic/cult.
 Song: "{(title or '')[:120]}" — {(artist or '')[:120]}
-Write in language: {learning_lang}
+Write in language: {target_lang}
 
 JSON only:
 {{"reason":"..."}}

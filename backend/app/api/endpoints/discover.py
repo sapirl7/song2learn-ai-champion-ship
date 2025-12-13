@@ -22,6 +22,7 @@ router = APIRouter(prefix="/discover", tags=["discover"])
 async def random_iconic_song(
     request: Request,
     learning_lang: str | None = None,
+    native_lang: str | None = None,
     db: AsyncSession = Depends(get_db),
     user_id: UUID = Depends(get_current_user_id),
 ):
@@ -29,10 +30,12 @@ async def random_iconic_song(
     Return a random curated 'iconic' song (by learning language), import it into DB, and explain why it's iconic.
     """
     # Resolve user language preference if not provided
+    res = await db.execute(select(User).where(User.id == user_id))
+    u = res.scalar_one_or_none()
     if not learning_lang:
-        res = await db.execute(select(User).where(User.id == user_id))
-        u = res.scalar_one_or_none()
         learning_lang = (u.learning_lang if u else "en") or "en"
+    if not native_lang:
+        native_lang = (u.native_lang if u else "en") or "en"
 
     pick = pick_iconic_song(learning_lang)
 
@@ -71,7 +74,7 @@ async def random_iconic_song(
         generated = await cerebras_service.describe_iconic_song(
             title=song.title,
             artist=song.artist,
-            learning_lang=learning_lang or "en",
+            target_lang=native_lang or "en",
         )
         if generated:
             reason = generated
