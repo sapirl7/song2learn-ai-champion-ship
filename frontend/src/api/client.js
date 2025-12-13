@@ -65,6 +65,11 @@ export const analyzeApi = {
   speak: (data) => client.post('/analyze/speak', data),
 }
 
+// Voice API (SPEC v5)
+export const voiceApi = {
+  speak: (data) => client.post('/voice/speak', data),
+}
+
 // Vocabulary API
 export const vocabularyApi = {
   create: (data) => client.post('/vocabulary', data),

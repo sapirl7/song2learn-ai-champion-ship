@@ -1,6 +1,7 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
 import { Search, Heart, BookOpen, GraduationCap, LogOut, Music } from 'lucide-react'
+import LanguageSelector from './LanguageSelector'
 
 function Layout() {
   const { user, logout } = useUser()
@@ -52,6 +53,7 @@ function Layout() {
 
             {/* User menu */}
             <div className="flex items-center gap-4">
+              <LanguageSelector user={user} />
               <span className="text-sm text-gray-600">{user?.email}</span>
               <button
                 onClick={handleLogout}

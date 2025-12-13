@@ -10,6 +10,7 @@ const languages = [
   { code: 'fr', name: 'French' },
   { code: 'de', name: 'German' },
   { code: 'it', name: 'Italian' },
+  { code: 'pl', name: 'Polish' },
   { code: 'pt', name: 'Portuguese' },
   { code: 'ru', name: 'Russian' },
   { code: 'ja', name: 'Japanese' },

@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { songsApi, userSongsApi, analyzeApi, vocabularyApi } from '../api/client'
+import { songsApi, userSongsApi, analyzeApi, vocabularyApi, voiceApi } from '../api/client'
 import { useUser } from '../stores/useUser'
+import { useLang } from '../stores/useLang'
 import toast from 'react-hot-toast'
 import {
   ArrowLeft,
@@ -19,6 +20,7 @@ function SongView() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { user } = useUser()
+  const { nativeLang, learningLang } = useLang()
   const audioRef = useRef(null)
   const hoverTimeoutRef = useRef(null)
   const abortControllerRef = useRef(null)
@@ -57,8 +59,8 @@ function SongView() {
     mutationFn: ({ line, lineIndex, signal }) =>
       analyzeApi.line({
         line,
-        native_lang: user?.native_lang || 'en',
-        learning_lang: user?.learning_lang || 'en',
+        native_lang: nativeLang || user?.native_lang || 'en',
+        learning_lang: learningLang || user?.learning_lang || 'en',
         song_id: parseInt(id),
         line_index: lineIndex,
       }, { signal }),
@@ -135,25 +137,45 @@ function SongView() {
   const handleSpeak = async (text) => {
     setIsSpeaking(true)
     try {
-      const response = await analyzeApi.speak({ text })
+      const response = await voiceApi.speak({ text, language: learningLang || user?.learning_lang || 'en' })
       if (audioRef.current) {
         audioRef.current.src = response.data.audio_url
         audioRef.current.play()
       }
     } catch (error) {
-      toast.error('Failed to generate audio')
+      // Fallback: browser TTS (works even if server-side TTS isn't configured).
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+          const u = new SpeechSynthesisUtterance(text)
+          u.lang = learningLang || user?.learning_lang || 'en'
+          window.speechSynthesis.speak(u)
+          toast('Using browser voice', { duration: 1500 })
+          return
+        }
+      } catch {
+        // ignore fallback errors
+      }
+      const status = error?.response?.status
+      const detail = error?.response?.data?.detail
+      toast.error(detail || (status ? `Failed to generate audio (${status})` : 'Failed to generate audio'))
     } finally {
       setIsSpeaking(false)
     }
   }
 
+  const escapeRegExp = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
   const handleSaveWord = async (word, meaning) => {
     setSavingWord(true)
     try {
+      const baseContext = lines[selectedLine] || ''
+      const re = new RegExp(`\\b${escapeRegExp(word)}\\b`, 'i')
+      const context = baseContext ? baseContext.replace(re, (m) => `[${m}]`) : ''
       await vocabularyApi.create({
         word,
         translation: meaning,
-        context: lines[selectedLine],
+        context,
         song_id: parseInt(id),
       })
       toast.success('Word saved to vocabulary!')
