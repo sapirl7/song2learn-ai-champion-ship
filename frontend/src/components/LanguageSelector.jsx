@@ -10,13 +10,13 @@ function LanguageSelector({ user }) {
   }, [user, seedFromUser])
 
   return (
-    <div className="hidden lg:flex items-center gap-2">
-      <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg">
+    <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 px-2 py-2 sm:px-3 bg-gray-50 border border-gray-200 rounded-lg">
         <Globe className="w-4 h-4 text-gray-400" />
         <select
           value={learningLang}
           onChange={(e) => setLearningLang(e.target.value)}
-          className="bg-transparent text-sm text-gray-700 focus:outline-none"
+          className="bg-transparent text-xs sm:text-sm text-gray-700 focus:outline-none"
           aria-label="From language"
         >
           {LANGUAGES.map((l) => (
@@ -29,7 +29,7 @@ function LanguageSelector({ user }) {
         <select
           value={nativeLang}
           onChange={(e) => setNativeLang(e.target.value)}
-          className="bg-transparent text-sm text-gray-700 focus:outline-none"
+          className="bg-transparent text-xs sm:text-sm text-gray-700 focus:outline-none"
           aria-label="To language"
         >
           {LANGUAGES.map((l) => (
