@@ -77,7 +77,7 @@ ICONIC_SONGS: Dict[str, List[IconicSong]] = {
     "ru": [
         IconicSong("Группа крови", "Кино", "Viktor Tsoi's rock anthem about fate and struggle. Essential vocabulary, cultural icon status."),
         IconicSong("Звезда по имени Солнце", "Кино", "Poetic rock about inner fire. Space metaphors, generational anthem of the 80s."),
-        IconicSong("Катюша", "Лидия Русланова", "WWII-era folk song known globally. Simple vocabulary about a girl waiting for her soldier."),
+        IconicSong("Надежда", "Анна Герман", "A beautiful ballad about hope by Polish-Soviet star Anna German. Emotional vocabulary, clear pronunciation."),
         IconicSong("Миллион алых роз", "Алла Пугачёва", "Soviet pop legend's signature song. Romantic gesture vocabulary, color words, storytelling."),
         IconicSong("Перемен", "Кино", "The perestroika anthem demanding change. Political vocabulary, historical significance."),
         IconicSong("Москва", "Монгол Шуудан", "Rock song about the capital. City vocabulary, strong pronunciation for practice."),
@@ -91,7 +91,7 @@ ICONIC_SONGS: Dict[str, List[IconicSong]] = {
         IconicSong("Autobiografia", "Perfect", "80s rock about lost youth. Past tense practice, nostalgia vocabulary."),
         IconicSong("Jolka, Jolka pamiętasz", "Budka Suflera", "Love letter to a lost love named Jolka. Memory vocabulary, emotional Polish."),
         IconicSong("Małgośka", "Czerwone Gitary", "60s Polish beat about a girl. Simple vocabulary, clear pronunciation."),
-        IconicSong("Gdzie ci mężczyźni", "Maryla Rodowicz", "Feminist anthem asking 'where are the real men?' Gender vocabulary, Polish disco."),
+        IconicSong("Zegarmistrz Światła", "Tadeusz Woźniak", "Philosophical rock ballad about a watchmaker of light. Poetic Polish vocabulary, metaphorical storytelling."),
         IconicSong("Wehikuł czasu", "Dżem", "Blues-rock journey through time. Time travel vocabulary, philosophical lyrics."),
         IconicSong("Tacy sami", "Obywatel G.C.", "80s rock about conformity vs individuality. Social vocabulary, adjective practice."),
         IconicSong("Kocham wolność", "Chłopcy z Placu Broni", "Freedom anthem from communist era. Liberty vocabulary, historical context."),
