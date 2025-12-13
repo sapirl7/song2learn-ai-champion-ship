@@ -78,7 +78,7 @@ async def health_check():
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Global exception handler."""
-    logger.error("unhandled_exception", error=str(exc), path=request.url.path)
+    logger.error("unhandled_exception", error=str(exc), path=request.url.path, exc_info=True)
     return JSONResponse(
         status_code=500,
         content={"detail": "Internal server error"},

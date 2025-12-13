@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 import structlog
 
 from app.db.session import get_db
@@ -67,8 +68,12 @@ async def demo_login(db: AsyncSession = Depends(get_db)):
     demo_email = "demo@song2learn.org"
 
     # Check if demo user exists
-    result = await db.execute(select(User).where(User.email == demo_email))
-    user = result.scalar_one_or_none()
+    try:
+        result = await db.execute(select(User).where(User.email == demo_email))
+        user = result.scalar_one_or_none()
+    except Exception as e:
+        logger.error("demo_login_db_select_error", error=str(e), exc_info=True)
+        raise HTTPException(status_code=500, detail="Database error")
 
     if not user:
         # Create demo user on the fly
@@ -79,9 +84,20 @@ async def demo_login(db: AsyncSession = Depends(get_db)):
             learning_lang="es",
         )
         db.add(user)
-        await db.commit()
-        await db.refresh(user)
-        logger.info("demo_user_created", user_id=user.id)
+        try:
+            await db.commit()
+            await db.refresh(user)
+            logger.info("demo_user_created", user_id=user.id)
+        except IntegrityError as e:
+            # Possible concurrent creation; recover by re-selecting.
+            await db.rollback()
+            logger.warning("demo_user_race_condition", error=str(e))
+            result = await db.execute(select(User).where(User.email == demo_email))
+            user = result.scalar_one()
+        except Exception as e:
+            await db.rollback()
+            logger.error("demo_login_db_create_error", error=str(e), exc_info=True)
+            raise HTTPException(status_code=500, detail="Database error")
 
     logger.info("demo_login", user_id=user.id)
 
