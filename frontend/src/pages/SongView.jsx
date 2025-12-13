@@ -200,6 +200,8 @@ function SongView() {
       await vocabularyApi.create({
         word,
         translation: meaning,
+        source_lang: learningLang || user?.learning_lang || 'en',
+        target_lang: nativeLang || user?.native_lang || 'en',
         context,
         song_id: parseInt(id),
       })
@@ -362,6 +364,20 @@ function SongView() {
                                 <span className="font-semibold text-gray-900">{t.orig}</span>
                                 {t.trans ? (
                                   <span className="text-sm text-primary-700">{t.trans}</span>
+                                ) : null}
+                                {t.trans && /[A-Za-zÀ-žА-Яа-я0-9]/.test(t.orig || '') ? (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation()
+                                      handleSaveWord(t.orig, t.trans)
+                                    }}
+                                    disabled={savingWord}
+                                    className="ml-1 p-0.5 text-gray-400 hover:text-primary-500 disabled:opacity-50"
+                                    title="Save to vocabulary"
+                                  >
+                                    <Plus className="w-4 h-4" />
+                                  </button>
                                 ) : null}
                               </span>
                             ))}

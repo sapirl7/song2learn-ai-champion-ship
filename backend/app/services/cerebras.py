@@ -257,5 +257,43 @@ JSON only:
             logger.error("cerebras_interlinear_error", error=str(e))
             return {**fallback, "cached": False, "latency_ms": int((time.time() - start) * 1000)}
 
+    async def translate_word(self, word: str, source_lang: str, target_lang: str) -> str:
+        """
+        Translate a single word/short phrase from source_lang to target_lang.
+        JSON: {"translation":"..."}
+        """
+        if not self.api_key:
+            return ""
+        w = (word or "")[:120]
+        prompt = f"""Translate from {source_lang} to {target_lang}.
+Text: "{w}"
+
+JSON only:
+{{"translation":"..."}}
+"""
+        try:
+            client = get_http_client()
+            resp = await client.post(
+                CEREBRAS_URL,
+                headers=self._headers(),
+                json={
+                    "model": MODEL,
+                    "messages": [
+                        {"role": "system", "content": "Translator. Valid JSON only."},
+                        {"role": "user", "content": prompt},
+                    ],
+                    "response_format": {"type": "json_object"},
+                    "max_tokens": 60,
+                    "temperature": 0.2,
+                },
+            )
+            resp.raise_for_status()
+            content = resp.json()["choices"][0]["message"]["content"]
+            data = json.loads(content)
+            return str(data.get("translation", "")).strip()[:200]
+        except Exception as e:
+            logger.error("cerebras_translate_word_error", error=str(e))
+            return ""
+
 
 cerebras_service = CerebrasService()

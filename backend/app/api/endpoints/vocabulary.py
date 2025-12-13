@@ -7,8 +7,14 @@ import structlog
 
 from app.db.session import get_db
 from app.models.vocabulary import Vocabulary
-from app.schemas.vocabulary import VocabularyCreate, VocabularyResponse
+from app.schemas.vocabulary import (
+    VocabularyCreate,
+    VocabularyResponse,
+    VocabularyTranslateRequest,
+    VocabularyTranslateResponse,
+)
 from app.core.security import get_current_user_id
+from app.services.cerebras import cerebras_service
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/vocabulary", tags=["vocabulary"])
@@ -25,6 +31,8 @@ async def create_vocabulary(
         user_id=user_id,
         word=data.word,
         translation=data.translation,
+        source_lang=data.source_lang,
+        target_lang=data.target_lang,
         context=data.context,
         song_id=data.song_id,
     )
@@ -34,6 +42,24 @@ async def create_vocabulary(
 
     logger.info("vocabulary_created", user_id=str(user_id), word=data.word)
     return vocab
+
+
+@router.post("/translate", response_model=VocabularyTranslateResponse)
+async def translate_vocab_word(
+    data: VocabularyTranslateRequest,
+    _: UUID = Depends(get_current_user_id),
+):
+    """
+    Translate a word into another target language (does not mutate stored vocab).
+    """
+    t = await cerebras_service.translate_word(
+        word=data.word,
+        source_lang=data.source_lang,
+        target_lang=data.target_lang,
+    )
+    if not t:
+        raise HTTPException(status_code=503, detail="Translation unavailable")
+    return VocabularyTranslateResponse(translation=t)
 
 
 @router.get("", response_model=List[VocabularyResponse])

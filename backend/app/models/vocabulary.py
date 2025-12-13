@@ -11,6 +11,9 @@ class Vocabulary(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
     word = Column(String(255), nullable=False)
     translation = Column(String(255), nullable=False)
+    # Store languages used when this vocab entry was created
+    source_lang = Column(String(10), nullable=True)  # learning language (word language)
+    target_lang = Column(String(10), nullable=True)  # translation language
     context = Column(Text, nullable=True)  # Optional context (e.g., line from song)
     song_id = Column(Integer, ForeignKey("songs.id", ondelete="SET NULL"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)

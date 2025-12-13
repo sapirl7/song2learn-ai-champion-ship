@@ -1,15 +1,21 @@
-import { useState, useEffect } from 'react'
-import { vocabularyApi } from '../api/client'
+import { useState, useEffect, useRef } from 'react'
+import { vocabularyApi, voiceApi } from '../api/client'
+import { LANGUAGES, useLang } from '../stores/useLang'
 import toast from 'react-hot-toast'
-import { BookOpen, Plus, Trash2, Loader2, X } from 'lucide-react'
+import { BookOpen, Plus, Trash2, Loader2, X, Volume2 } from 'lucide-react'
 
 function Vocabulary() {
+  const { nativeLang, learningLang } = useLang()
   const [words, setWords] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
   const [newWord, setNewWord] = useState({ word: '', translation: '', context: '' })
   const [isAdding, setIsAdding] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
+  const [speakingId, setSpeakingId] = useState(null)
+  const audioRef = useRef(null)
+  const [translationOverride, setTranslationOverride] = useState({})
+  const [targetOverride, setTargetOverride] = useState({})
 
   useEffect(() => {
     loadVocabulary()
@@ -32,7 +38,11 @@ function Vocabulary() {
 
     setIsAdding(true)
     try {
-      const response = await vocabularyApi.create(newWord)
+      const response = await vocabularyApi.create({
+        ...newWord,
+        source_lang: learningLang || 'en',
+        target_lang: nativeLang || 'en',
+      })
       setWords([response.data, ...words])
       setNewWord({ word: '', translation: '', context: '' })
       setShowAddModal(false)
@@ -41,6 +51,49 @@ function Vocabulary() {
       toast.error('Failed to add word')
     } finally {
       setIsAdding(false)
+    }
+  }
+
+  const handleSpeak = async (word) => {
+    setSpeakingId(word.id)
+    try {
+      const lang = word.source_lang || learningLang || 'en'
+      const response = await voiceApi.speak({ text: word.word, language: lang })
+      if (audioRef.current) {
+        audioRef.current.src = response.data.audio_url
+        await audioRef.current.play()
+      }
+    } catch (error) {
+      // Fallback: browser TTS
+      try {
+        if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel()
+          const u = new SpeechSynthesisUtterance(word.word)
+          u.lang = word.source_lang || learningLang || 'en'
+          window.speechSynthesis.speak(u)
+          toast('Using browser voice', { duration: 1500 })
+          return
+        }
+      } catch {
+        // ignore
+      }
+      toast.error('Failed to play audio')
+    } finally {
+      setSpeakingId(null)
+    }
+  }
+
+  const handleTranslateView = async (word, target) => {
+    try {
+      setTargetOverride((prev) => ({ ...prev, [word.id]: target }))
+      const res = await vocabularyApi.translate({
+        word: word.word,
+        source_lang: word.source_lang || learningLang || 'en',
+        target_lang: target,
+      })
+      setTranslationOverride((prev) => ({ ...prev, [word.id]: res.data.translation }))
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Translation unavailable')
     }
   }
 
@@ -67,6 +120,7 @@ function Vocabulary() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      <audio ref={audioRef} className="hidden" />
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <BookOpen className="w-8 h-8 text-primary-500" />
@@ -106,28 +160,65 @@ function Vocabulary() {
               className="flex items-start justify-between p-4 bg-white rounded-xl border border-gray-200 hover:border-primary-200 transition-colors"
             >
               <div className="flex-1">
-                <div className="flex items-baseline gap-3 mb-1">
+                <div className="flex items-baseline gap-3 mb-1 flex-wrap">
                   <span className="text-lg font-semibold text-gray-900">
                     {word.word}
                   </span>
+                  {(word.source_lang || word.target_lang) && (
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 border border-gray-200">
+                      {(word.source_lang || '?')}→{(word.target_lang || '?')}
+                    </span>
+                  )}
                   <span className="text-gray-400">—</span>
-                  <span className="text-gray-600">{word.translation}</span>
+                  <span className="text-gray-600">
+                    {translationOverride[word.id] ?? word.translation}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <button
+                    type="button"
+                    onClick={() => handleSpeak(word)}
+                    disabled={speakingId === word.id}
+                    className="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                  >
+                    {speakingId === word.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Volume2 className="w-4 h-4" />
+                    )}
+                    Listen
+                  </button>
+
+                  <select
+                    value={targetOverride[word.id] || word.target_lang || nativeLang || 'en'}
+                    onChange={(e) => handleTranslateView(word, e.target.value)}
+                    className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg text-gray-700 bg-white"
+                    title="View translation in another language"
+                  >
+                    {LANGUAGES.map((l) => (
+                      <option key={l.code} value={l.code}>
+                        {l.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 {word.context && (
                   <p className="text-sm text-gray-500 italic">"{word.context}"</p>
                 )}
               </div>
-              <button
-                onClick={() => handleDelete(word.id)}
-                disabled={deletingId === word.id}
-                className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-              >
-                {deletingId === word.id ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-5 h-5" />
-                )}
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => handleDelete(word.id)}
+                  disabled={deletingId === word.id}
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors"
+                >
+                  {deletingId === word.id ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Trash2 className="w-5 h-5" />
+                  )}
+                </button>
+              </div>
             </div>
           ))}
         </div>

@@ -74,6 +74,7 @@ export const voiceApi = {
 // Vocabulary API
 export const vocabularyApi = {
   create: (data) => client.post('/vocabulary', data),
+  translate: (data) => client.post('/vocabulary/translate', data),
   getAll: () => client.get('/vocabulary'),
   delete: (id) => client.delete(`/vocabulary/${id}`),
 }
