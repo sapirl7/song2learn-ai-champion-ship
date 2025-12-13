@@ -66,11 +66,13 @@ class CerebrasService:
         if cached:
             return {**cached, "cached": True, "latency_ms": int((time.time() - start) * 1000)}
 
-        prompt = f"""Analyze lyric for language learner. Translate to {native_lang}.
+        prompt = f"""Analyze lyric for language learner. The learner's native language is {native_lang}.
 Line: "{line}"
 
+IMPORTANT: Write ALL output (translation, grammar, vocabulary meanings) in {native_lang}.
+
 JSON only:
-{{"translation":"...","grammar":"short","vocabulary":[{{"word":"...","meaning":"...","part_of_speech":"..."}}]}}
+{{"translation":"...(in {native_lang})","grammar":"short grammar note in {native_lang}","vocabulary":[{{"word":"...(original word)","meaning":"...(in {native_lang})","part_of_speech":"...(in {native_lang})"}}]}}
 """
 
         fallback = {"translation": "Analysis unavailable", "grammar": "", "vocabulary": []}
