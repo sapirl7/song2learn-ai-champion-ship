@@ -37,8 +37,9 @@ async def random_iconic_song(
     if not native_lang:
         native_lang = (u.native_lang if u else "en") or "en"
 
-    # Try up to 5 different songs from target language, then fallback to English
-    MAX_ATTEMPTS = 5
+    # Try up to 3 songs from target language, then fallback to 2 English songs
+    # With 5s timeout per LRCLIB request, worst case = 5 attempts × 5s = 25s
+    MAX_ATTEMPTS = 3
     tried_songs = set()
     lrclib_data = None
     pick = None
@@ -60,7 +61,7 @@ async def random_iconic_song(
     if not lrclib_data and learning_lang != "en":
         logger.info("discover_fallback_to_english", original_lang=learning_lang)
         tried_songs.clear()
-        for _ in range(3):
+        for _ in range(2):  # Only 2 English fallback attempts
             pick = pick_iconic_song("en")
             song_key = (pick.title, pick.artist)
             if song_key in tried_songs:
