@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { userSongsApi, exercisesApi } from '../api/client'
 import { useLang } from '../stores/useLang'
-import { t } from '../i18n/translations'
+import { t, getLangName } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import {
   GraduationCap,
@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ChevronRight,
   HelpCircle,
+  ArrowRight,
 } from 'lucide-react'
 
 function Exercises() {
@@ -193,9 +194,16 @@ function Exercises() {
       </div>
 
       {/* Song info */}
-      <div className="text-center mb-8">
+      <div className="text-center mb-6">
         <h2 className="text-xl font-bold text-gray-900">{selectedSong.title}</h2>
         <p className="text-gray-500">{selectedSong.artist}</p>
+      </div>
+
+      {/* Language direction indicator */}
+      <div className="flex items-center justify-center gap-2 mb-6 px-4 py-2 bg-primary-50 border border-primary-200 rounded-lg">
+        <span className="text-sm font-medium text-primary-700">{getLangName(learningLang, uiLang)}</span>
+        <ArrowRight className="w-4 h-4 text-primary-500" />
+        <span className="text-sm font-medium text-primary-700">{getLangName(nativeLang, uiLang)}</span>
       </div>
 
       {/* Progress */}
@@ -247,11 +255,10 @@ function Exercises() {
       {/* Feedback */}
       {feedback && (
         <div
-          className={`rounded-xl p-6 mb-6 ${
-            feedback.is_correct
-              ? 'bg-green-50 border border-green-200'
-              : 'bg-orange-50 border border-orange-200'
-          }`}
+          className={`rounded-xl p-6 mb-6 ${feedback.is_correct
+            ? 'bg-green-50 border border-green-200'
+            : 'bg-orange-50 border border-orange-200'
+            }`}
         >
           <div className="flex items-start gap-3">
             {feedback.is_correct ? (
@@ -261,9 +268,8 @@ function Exercises() {
             )}
             <div>
               <h3
-                className={`font-semibold mb-2 ${
-                  feedback.is_correct ? 'text-green-700' : 'text-orange-700'
-                }`}
+                className={`font-semibold mb-2 ${feedback.is_correct ? 'text-green-700' : 'text-orange-700'
+                  }`}
               >
                 {feedback.is_correct ? t('exercises.correct', uiLang) : t('exercises.notQuite', uiLang)}
               </h3>
