@@ -8,7 +8,7 @@ import { Search as SearchIcon, Music, Plus, Loader2, Sparkles, HelpCircle } from
 
 function Search() {
   const navigate = useNavigate()
-  const { learningLang, uiLang } = useLang()
+  const { learningLang, nativeLang, uiLang } = useLang()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [isSearching, setIsSearching] = useState(false)
