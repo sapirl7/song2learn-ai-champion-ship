@@ -414,21 +414,21 @@ function SongView() {
                       {interlinearTokens && (
                         <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
                           <div className="flex flex-wrap gap-x-2 gap-y-2">
-                            {interlinearTokens.map((t, ti) => (
+                            {interlinearTokens.map((token, ti) => (
                               <span
                                 key={ti}
                                 className="inline-flex items-baseline gap-1 px-2 py-1 bg-white border border-gray-200 rounded-lg"
                               >
-                                <span className="font-semibold text-gray-900">{t.orig}</span>
-                                {t.trans ? (
-                                  <span className="text-sm text-primary-700">{t.trans}</span>
+                                <span className="font-semibold text-gray-900">{token.orig}</span>
+                                {token.trans ? (
+                                  <span className="text-sm text-primary-700">{token.trans}</span>
                                 ) : null}
-                                {t.trans && /[A-Za-zÀ-žА-Яа-я0-9]/.test(t.orig || '') ? (
+                                {token.trans && /[A-Za-zÀ-žА-Яа-я0-9]/.test(token.orig || '') ? (
                                   <button
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation()
-                                      handleSaveWord(t.orig, t.trans)
+                                      handleSaveWord(token.orig, token.trans)
                                     }}
                                     disabled={savingWord}
                                     className="ml-1 p-0.5 text-gray-400 hover:text-primary-500 disabled:opacity-50"
