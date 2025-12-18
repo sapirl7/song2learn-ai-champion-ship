@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     ELEVENLABS_API_KEY: str = ""
 
     # Vultr S3 Object Storage
-    VULTR_S3_REGION: str = "ewr1"
+    VULTR_S3_REGION: str = "ams1"
     VULTR_S3_ACCESS_KEY: str = ""
     VULTR_S3_SECRET_KEY: str = ""
     VULTR_S3_BUCKET: str = "song2learn-audio"

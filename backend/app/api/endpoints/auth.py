@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
@@ -8,13 +8,15 @@ from app.db.session import get_db
 from app.models.user import User
 from app.schemas.user import UserCreate, UserLogin, UserResponse, TokenResponse
 from app.core.security import get_password_hash, verify_password, create_access_token, get_current_user_id
+from app.core.limiter import limiter
 
 logger = structlog.get_logger()
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
+@limiter.limit("5/minute")
+async def register(request: Request, user_data: UserCreate, db: AsyncSession = Depends(get_db)):
     """Register a new user."""
     # Check if user already exists
     result = await db.execute(select(User).where(User.email == user_data.email))
@@ -45,7 +47,8 @@ async def register(user_data: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def login(request: Request, user_data: UserLogin, db: AsyncSession = Depends(get_db)):
     """Login and get access token."""
     result = await db.execute(select(User).where(User.email == user_data.email))
     user = result.scalar_one_or_none()
@@ -63,7 +66,8 @@ async def login(user_data: UserLogin, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/demo-login", response_model=TokenResponse)
-async def demo_login(db: AsyncSession = Depends(get_db)):
+@limiter.limit("10/minute")
+async def demo_login(request: Request, db: AsyncSession = Depends(get_db)):
     """Demo login for hackathon judges - no password required."""
     demo_email = "demo@song2learn.org"
 
