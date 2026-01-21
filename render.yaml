@@ -56,3 +56,10 @@ databases:
     region: frankfurt
     databaseName: song2learn
     user: song2learn
+
+# Keep-alive cron job to prevent cold starts on free tier
+cron:
+  - name: keep-alive
+    schedule: "*/10 * * * *"
+    command: curl -sf https://song2learn-api.onrender.com/health > /dev/null || true
+    region: frankfurt
