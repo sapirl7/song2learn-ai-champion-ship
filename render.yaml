@@ -50,16 +50,19 @@ services:
         # Pydantic parses List[str] from env as JSON by default.
         value: '["127.0.0.1","10.0.0.0/8","172.16.0.0/12"]'
 
+  # Keep-alive cron job to prevent cold starts on free tier
+  - type: cron
+    name: keep-alive
+    runtime: python
+    region: frankfurt
+    plan: free
+    schedule: "*/10 * * * *"
+    buildCommand: echo "No build needed"
+    startCommand: curl -sf https://song2learn-api.onrender.com/health > /dev/null || true
+
 databases:
   - name: song2learn-db
     plan: free
     region: frankfurt
     databaseName: song2learn
     user: song2learn
-
-# Keep-alive cron job to prevent cold starts on free tier
-cron:
-  - name: keep-alive
-    schedule: "*/10 * * * *"
-    command: curl -sf https://song2learn-api.onrender.com/health > /dev/null || true
-    region: frankfurt
