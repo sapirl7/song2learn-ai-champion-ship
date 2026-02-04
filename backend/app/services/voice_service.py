@@ -1,5 +1,5 @@
 import hashlib
-from typing import Optional
+from typing import Optional, Dict, Any
 import aioboto3
 from botocore.exceptions import ClientError
 import structlog
@@ -23,7 +23,7 @@ MAX_TEXT_LENGTH = 500
 class VoiceService:
     """
     ElevenLabs TTS + Vultr S3 storage.
-    v5: single S3 context per call + ACL fallback + hash-based keys.
+    v6: signed URL support + metadata helpers.
     """
 
     def __init__(self):
@@ -33,8 +33,11 @@ class VoiceService:
         self.region = settings.VULTR_S3_REGION
         self._session = aioboto3.Session()
 
-    def _audio_key(self, text: str, lang: str, speed: float) -> str:
-        h = hashlib.sha256(f"{text}:{lang}:{speed}".encode()).hexdigest()[:16]
+    def _text_hash(self, text: str, lang: str, speed: float, voice_id: str) -> str:
+        return hashlib.sha256(f"{text}:{lang}:{speed}:{voice_id}".encode()).hexdigest()
+
+    def _audio_key(self, text: str, lang: str, speed: float, voice_id: str) -> str:
+        h = self._text_hash(text, lang, speed, voice_id)[:16]
         return f"tts/{h}.mp3"
 
     def _public_url(self, key: str) -> str:
@@ -46,7 +49,7 @@ class VoiceService:
         voice_id: Optional[str] = None,
         language: Optional[str] = None,
         speed: Optional[float] = None,
-    ) -> str:
+    ) -> Dict[str, Any]:
         # Fail fast with a clear message if server-side voice isn't configured.
         if not settings.ELEVENLABS_API_KEY:
             raise RuntimeError("ELEVENLABS_API_KEY is not set")
@@ -63,7 +66,8 @@ class VoiceService:
         spd = max(0.7, min(1.2, spd))
 
         vid = voice_id or VOICES.get(lang, VOICES["en"])
-        key = self._audio_key(text, lang, spd)
+        key = self._audio_key(text, lang, spd, vid)
+        text_hash = self._text_hash(text, lang, spd, vid)
 
         async with self._session.client(
             "s3",
@@ -76,7 +80,15 @@ class VoiceService:
             try:
                 await s3.head_object(Bucket=self.bucket, Key=key)
                 logger.debug("voice_cache_hit", key=key[:30])
-                return self._public_url(key)
+                return {
+                    "audio_url": self._make_url(s3, key),
+                    "key": key,
+                    "text_hash": text_hash,
+                    "voice_id": vid,
+                    "language": lang,
+                    "speed": spd,
+                    "text_len": len(text),
+                }
             except ClientError as e:
                 if e.response.get("Error", {}).get("Code") != "404":
                     logger.warning("s3_head_error", key=key, error=str(e))
@@ -122,7 +134,24 @@ class VoiceService:
                     raise
 
             logger.info("voice_generated", text_len=len(text), key=key)
-            return self._public_url(key)
+            return {
+                "audio_url": self._make_url(s3, key),
+                "key": key,
+                "text_hash": text_hash,
+                "voice_id": vid,
+                "language": lang,
+                "speed": spd,
+                "text_len": len(text),
+            }
+
+    def _make_url(self, s3, key: str) -> str:
+        if settings.VOICE_SIGNED_URLS:
+            return s3.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.bucket, "Key": key},
+                ExpiresIn=settings.VOICE_SIGNED_URL_TTL_SECONDS,
+            )
+        return self._public_url(key)
 
 
 voice_service = VoiceService()

@@ -11,7 +11,12 @@ class Settings(BaseSettings):
     # JWT
     JWT_SECRET: str = "your-super-secret-key-change-in-production"
     JWT_ALGORITHM: str = "HS256"
-    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    JWT_EXPIRE_MINUTES: int = 60 * 24 * 7  # Legacy default (7 days) for compatibility
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+
+    # Google OAuth (ID token verification)
+    GOOGLE_CLIENT_IDS: List[str] = []
 
     # LRCLIB
     LRCLIB_BASE_URL: str = "https://lrclib.net/api"
@@ -29,6 +34,12 @@ class Settings(BaseSettings):
     VULTR_S3_SECRET_KEY: str = ""
     VULTR_S3_BUCKET: str = "song2learn-audio"
 
+    # Voice storage behavior
+    VOICE_SIGNED_URLS: bool = False
+    VOICE_SIGNED_URL_TTL_SECONDS: int = 3600
+    VOICE_TTL_DAYS: int = 30
+    TTS_CLEANUP_BATCH: int = 100
+
     # Frontend URL for CORS
     FRONTEND_URL: str = "http://localhost:5173"
 
@@ -44,6 +55,11 @@ class Settings(BaseSettings):
     PORT: int = 8000
     DEBUG: bool = False  # Set to True in .env for development
 
+    # Feature flags (fail-fast config validation)
+    FEATURE_GOOGLE_AUTH: bool = False
+    FEATURE_AI: bool = False
+    FEATURE_VOICE: bool = False
+
     @property
     def vultr_endpoint_url(self) -> str:
         return f"https://{self.VULTR_S3_REGION}.vultrobjects.com"
@@ -51,6 +67,31 @@ class Settings(BaseSettings):
     @property
     def vultr_public_url(self) -> str:
         return f"https://{self.VULTR_S3_BUCKET}.{self.VULTR_S3_REGION}.vultrobjects.com"
+
+    def validate_runtime(self) -> None:
+        missing: list[str] = []
+        if not self.DATABASE_URL:
+            missing.append("DATABASE_URL")
+        if not self.JWT_SECRET:
+            missing.append("JWT_SECRET")
+        if self.FEATURE_GOOGLE_AUTH and not self.GOOGLE_CLIENT_IDS:
+            missing.append("GOOGLE_CLIENT_IDS")
+        if self.FEATURE_AI and not self.CEREBRAS_API_KEY:
+            missing.append("CEREBRAS_API_KEY")
+        if self.FEATURE_VOICE:
+            if not self.ELEVENLABS_API_KEY:
+                missing.append("ELEVENLABS_API_KEY")
+            if not self.VULTR_S3_ACCESS_KEY:
+                missing.append("VULTR_S3_ACCESS_KEY")
+            if not self.VULTR_S3_SECRET_KEY:
+                missing.append("VULTR_S3_SECRET_KEY")
+            if not self.VULTR_S3_BUCKET:
+                missing.append("VULTR_S3_BUCKET")
+            if not self.VULTR_S3_REGION:
+                missing.append("VULTR_S3_REGION")
+
+        if missing:
+            raise RuntimeError(f"Missing required configuration: {', '.join(sorted(set(missing)))}")
 
 
 settings = Settings()

@@ -61,12 +61,14 @@ class CerebrasService:
         start = time.time()
         line = (line or "")[:MAX_LINE_LENGTH]
 
-        cache_key = make_analysis_key(song_id, line_index, line, native_lang)
+        cache_key = make_analysis_key(song_id, line_index, line, native_lang, learning_lang)
         cached = cache_service.get(cache_key)
         if cached:
             return {**cached, "cached": True, "latency_ms": int((time.time() - start) * 1000)}
 
-        prompt = f"""Analyze lyric for language learner. The learner's native language is {native_lang}.
+        prompt = f"""Analyze lyric for a language learner.
+Input language: {learning_lang}
+Learner's native language: {native_lang}
 Line: "{line}"
 
 IMPORTANT: Write ALL output (translation, grammar, vocabulary meanings) in {native_lang}.

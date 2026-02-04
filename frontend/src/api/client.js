@@ -1,7 +1,8 @@
 import axios from 'axios'
 import axiosRetry from 'axios-retry'
+import config from '../config'
 
-const API_BASE_URL = (import.meta.env.VITE_API_URL || '/api').trim()
+const API_BASE_URL = config.apiUrl
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -21,9 +22,31 @@ axiosRetry(client, {
   },
 })
 
+const TOKENS = {
+  access: 'access_token',
+  refresh: 'refresh_token',
+}
+
+const tokenStore = {
+  getAccess() {
+    return localStorage.getItem(TOKENS.access)
+  },
+  getRefresh() {
+    return localStorage.getItem(TOKENS.refresh)
+  },
+  set(accessToken, refreshToken) {
+    if (accessToken) localStorage.setItem(TOKENS.access, accessToken)
+    if (refreshToken) localStorage.setItem(TOKENS.refresh, refreshToken)
+  },
+  clear() {
+    localStorage.removeItem(TOKENS.access)
+    localStorage.removeItem(TOKENS.refresh)
+  },
+}
+
 // Add auth token to requests
 client.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
+  const token = tokenStore.getAccess()
   if (token) {
     // Axios may represent headers as a plain object or as AxiosHeaders (with .set()).
     if (!config.headers) config.headers = {}
@@ -36,16 +59,76 @@ client.interceptors.request.use((config) => {
   return config
 })
 
-// Handle auth errors
+let isRefreshing = false
+let refreshQueue = []
+
+const processQueue = (error, accessToken = null) => {
+  refreshQueue.forEach((p) => {
+    if (error) p.reject(error)
+    else p.resolve(accessToken)
+  })
+  refreshQueue = []
+}
+
+// Handle auth errors with refresh flow
 client.interceptors.response.use(
   (response) => response,
-  (error) => {
-    // FastAPI's HTTPBearer returns 403 on missing/invalid token; handle both.
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+  async (error) => {
+    const original = error.config
+    if (!original) return Promise.reject(error)
+
+    // Only handle 401s for protected endpoints, and avoid infinite loop
+    if (error.response?.status !== 401 || original.__isRetryRequest) {
+      return Promise.reject(error)
     }
-    return Promise.reject(error)
+
+    const refreshToken = tokenStore.getRefresh()
+    if (!refreshToken) {
+      tokenStore.clear()
+      window.location.href = '/login'
+      return Promise.reject(error)
+    }
+
+    if (isRefreshing) {
+      return new Promise((resolve, reject) => {
+        refreshQueue.push({ resolve, reject })
+      }).then((accessToken) => {
+        original.__isRetryRequest = true
+        if (!original.headers) original.headers = {}
+        if (typeof original.headers.set === 'function') {
+          original.headers.set('Authorization', `Bearer ${accessToken}`)
+        } else {
+          original.headers.Authorization = `Bearer ${accessToken}`
+        }
+        return client(original)
+      })
+    }
+
+    isRefreshing = true
+    original.__isRetryRequest = true
+
+    try {
+      const resp = await axios.post(`${API_BASE_URL}/auth/refresh`, { refresh_token: refreshToken })
+      const { access_token, refresh_token } = resp.data || {}
+      if (!access_token || !refresh_token) throw new Error('Invalid refresh response')
+      tokenStore.set(access_token, refresh_token)
+      processQueue(null, access_token)
+
+      if (!original.headers) original.headers = {}
+      if (typeof original.headers.set === 'function') {
+        original.headers.set('Authorization', `Bearer ${access_token}`)
+      } else {
+        original.headers.Authorization = `Bearer ${access_token}`
+      }
+      return client(original)
+    } catch (refreshError) {
+      processQueue(refreshError, null)
+      tokenStore.clear()
+      window.location.href = '/login'
+      return Promise.reject(refreshError)
+    } finally {
+      isRefreshing = false
+    }
   }
 )
 
@@ -53,7 +136,10 @@ client.interceptors.response.use(
 export const authApi = {
   register: (data) => client.post('/auth/register', data),
   login: (data) => client.post('/auth/login', data),
+  google: (data) => client.post('/auth/google', data),
   demoLogin: () => client.post('/auth/demo-login'),
+  refresh: (refreshToken) => client.post('/auth/refresh', { refresh_token: refreshToken }),
+  logout: (refreshToken) => client.post('/auth/logout', { refresh_token: refreshToken }),
   getMe: () => client.get('/auth/me'),
 }
 
@@ -74,12 +160,11 @@ export const userSongsApi = {
 
 // Analyze API
 export const analyzeApi = {
-  line: (data) => client.post('/analyze/line', data),
-  speak: (data) => client.post('/analyze/speak', data),
+  line: (data, config) => client.post('/analyze/line', data, config),
   interlinear: (data) => client.post('/analyze/interlinear', data),
 }
 
-// Voice API (SPEC v5)
+// Voice API
 export const voiceApi = {
   speak: (data) => client.post('/voice/speak', data),
 }
@@ -100,6 +185,16 @@ export const exercisesApi = {
 // Discover API (90s timeout for Render cold start + LRCLIB retries + Cerebras)
 export const discoverApi = {
   randomIconic: (params) => client.get('/discover/random-iconic', { params, timeout: 90000 }),
+}
+
+// Meta API
+export const metaApi = {
+  languages: () => client.get('/meta/languages'),
+}
+
+// Users API
+export const usersApi = {
+  updatePreferences: (data) => client.patch('/users/me/preferences', data),
 }
 
 export default client

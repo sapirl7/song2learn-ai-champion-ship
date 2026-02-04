@@ -40,7 +40,7 @@ async def create_vocabulary(
     await db.commit()
     await db.refresh(vocab)
 
-    logger.info("vocabulary_created", user_id=str(user_id), word=data.word)
+    logger.info("vocabulary_created", user_id=str(user_id), vocab_id=vocab.id)
     return vocab
 
 

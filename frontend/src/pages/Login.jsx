@@ -1,21 +1,37 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
+import { useLang } from '../stores/useLang'
+import config from '../config'
 import { t } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import { Music, Mail, Lock, Sparkles } from 'lucide-react'
 
+const GOOGLE_SCRIPT_SRC = 'https://accounts.google.com/gsi/client'
+
 function Login() {
   const navigate = useNavigate()
-  const { login, demoLogin } = useUser()
+  const { login, demoLogin, googleLogin } = useUser()
+  const { nativeLang, learningLang } = useLang()
   // Always use English on login page for judges/demo
   const lang = 'en'
   const [isLoading, setIsLoading] = useState(false)
   const [isDemoLoading, setIsDemoLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   })
+
+  useEffect(() => {
+    if (!config.enableGoogleAuth) return
+    if (document.querySelector(`script[src="${GOOGLE_SCRIPT_SRC}"]`)) return
+    const s = document.createElement('script')
+    s.src = GOOGLE_SCRIPT_SRC
+    s.async = true
+    s.defer = true
+    document.body.appendChild(s)
+  }, [])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -45,6 +61,37 @@ function Login() {
     }
   }
 
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true)
+    try {
+      if (!window.google || !window.google.accounts?.id) {
+        throw new Error('Google auth not available')
+      }
+      const idToken = await new Promise((resolve, reject) => {
+        window.google.accounts.id.initialize({
+          client_id: config.googleClientId,
+          callback: (response) => {
+            if (response?.credential) resolve(response.credential)
+            else reject(new Error('No credential returned'))
+          },
+        })
+        window.google.accounts.id.prompt((notification) => {
+          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+            reject(new Error('Google sign-in dismissed'))
+          }
+        })
+      })
+
+      await googleLogin(idToken, nativeLang, learningLang)
+      toast.success('Welcome!')
+      navigate('/search')
+    } catch (error) {
+      toast.error(error.message || 'Google login failed')
+    } finally {
+      setIsGoogleLoading(false)
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 px-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
@@ -56,6 +103,29 @@ function Login() {
           </div>
           <p className="text-gray-600">Learn languages through music</p>
         </div>
+
+        {/* Google Login */}
+        {config.enableGoogleAuth && (
+          <button
+            onClick={handleGoogleLogin}
+            disabled={isGoogleLoading}
+            className="w-full mb-4 py-3 border border-gray-300 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            {isGoogleLoading ? t('common.loading', lang) : 'Continue with Google'}
+          </button>
+        )}
+
+        {/* Divider */}
+        {config.enableGoogleAuth && (
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-200"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-4 bg-white text-gray-500">{t('common.or', lang)}</span>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { LANGUAGES as LANG_LIST } from '../i18n/translations'
+import { usersApi } from '../api/client'
 
 const STORAGE_KEY = 'lang_settings_v2'
 
@@ -33,6 +34,15 @@ export const useLang = create((set, get) => {
   const learningLang = saved?.learningLang || 'en'
   const uiLang = saved?.uiLang || 'en'
 
+  const syncServer = async () => {
+    const { nativeLang: n, learningLang: l } = get()
+    try {
+      await usersApi.updatePreferences({ native_lang: n, learning_lang: l })
+    } catch {
+      // ignore server sync errors
+    }
+  }
+
   return {
     nativeLang,
     learningLang,
@@ -40,10 +50,12 @@ export const useLang = create((set, get) => {
     setNativeLang: (lang) => {
       set({ nativeLang: lang })
       persist(get())
+      syncServer()
     },
     setLearningLang: (lang) => {
       set({ learningLang: lang })
       persist(get())
+      syncServer()
     },
     setUiLang: (lang) => {
       set({ uiLang: lang })

@@ -19,7 +19,7 @@ Monorepo layout:
 
 - `backend/` → FastAPI app (entrypoint `app.main:app`)
 - `frontend/` → Vite/React app
-- root `package.json` + `src/` also exist, so **do not rely on platform auto-detection** for backend.
+- root `package.json` is intentionally inert; **do not rely on platform auto-detection** for backend.
 
 ---
 
@@ -54,6 +54,8 @@ Set these in Render (names must match code):
 - `JWT_SECRET`
 - `JWT_ALGORITHM` (optional; default `HS256`)
 - `JWT_EXPIRE_MINUTES` (optional)
+- `ACCESS_TOKEN_EXPIRE_MINUTES` (default `15`)
+- `REFRESH_TOKEN_EXPIRE_DAYS` (default `30`)
 - `FRONTEND_URL` (set to `https://song2learn.org`)
 - `CEREBRAS_API_KEY`
 - `ELEVENLABS_API_KEY`
@@ -61,6 +63,13 @@ Set these in Render (names must match code):
 - `VULTR_S3_ACCESS_KEY`
 - `VULTR_S3_SECRET_KEY`
 - `VULTR_S3_BUCKET`
+- `VOICE_SIGNED_URLS` (true/false)
+- `VOICE_SIGNED_URL_TTL_SECONDS` (e.g. 3600)
+- `VOICE_TTL_DAYS` (e.g. 30)
+- `TTS_CLEANUP_BATCH` (e.g. 100)
+- `FEATURE_GOOGLE_AUTH` (true/false)
+- `FEATURE_AI` (true/false)
+- `FEATURE_VOICE` (true/false)
 - `RATE_LIMIT_ANALYZE` (optional; e.g. `60/minute`)
 - `RATE_LIMIT_VOICE` (optional; e.g. `20/minute`)
 - `TRUSTED_PROXIES` (optional; list for XFF validation). For `List[str]` values, Render env should be JSON, e.g. `["127.0.0.1","10.0.0.0/8"]`.
@@ -100,6 +109,8 @@ In Vercel:
 Set:
 
 - `VITE_API_URL=https://<YOUR_RENDER_BACKEND_HOST>/api`
+- `VITE_ENABLE_GOOGLE_AUTH=false` (true/false)
+- `VITE_GOOGLE_CLIENT_ID=...` (required if Google auth is enabled)
 
 > Must include the `/api` suffix, because backend routes are under `/api` and frontend calls `/auth/*`, `/songs/*`, etc.
 

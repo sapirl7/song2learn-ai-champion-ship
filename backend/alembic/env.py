@@ -10,7 +10,7 @@ from alembic import context
 # Import your models and config
 from app.core.config import settings
 from app.db.session import Base
-from app.models import User, Song, UserSong, Vocabulary  # noqa: F401
+from app.models import User, Song, UserSong, Vocabulary, Session, TTSAudio  # noqa: F401
 
 # Alembic Config object
 config = context.config

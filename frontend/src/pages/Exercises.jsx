@@ -29,6 +29,7 @@ function Exercises() {
   // Get lines from selected song
   const lines = selectedSong?.lyrics?.split('\n').filter((line) => line.trim()) || []
   const currentLine = lines[currentLineIndex]
+  const hasLines = lines.length > 0
 
   useEffect(() => {
     loadSavedSongs()
@@ -54,7 +55,7 @@ function Exercises() {
 
   const handleCheck = async (e) => {
     e.preventDefault()
-    if (!userTranslation.trim()) return
+    if (!userTranslation.trim() || !currentLine) return
 
     setIsChecking(true)
     setFeedback(null)
@@ -169,6 +170,31 @@ function Exercises() {
             </div>
           </>
         )}
+      </div>
+    )
+  }
+
+  if (!hasLines) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <button
+            onClick={() => setSelectedSong(null)}
+            className="text-gray-600 hover:text-gray-900"
+          >
+            {t('exercises.backToSongs', uiLang)}
+          </button>
+        </div>
+        <div className="bg-white rounded-xl p-6 shadow-sm border text-center">
+          <p className="text-gray-700 mb-3">This song has no lyrics to practice.</p>
+          <Link
+            to="/search"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors"
+          >
+            <Music className="w-5 h-5" />
+            {t('common.findSongs', uiLang)}
+          </Link>
+        </div>
       </div>
     )
   }

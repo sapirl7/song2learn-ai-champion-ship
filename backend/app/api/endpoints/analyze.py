@@ -5,13 +5,10 @@ import structlog
 from app.schemas.analyze import (
     AnalyzeRequest,
     AnalyzeResponse,
-    SpeakRequest,
-    SpeakResponse,
     InterlinearRequest,
     InterlinearResponse,
 )
 from app.services.cerebras import cerebras_service
-from app.services.voice_service import voice_service
 from app.core.security import get_current_user_id
 from app.core.limiter import limiter
 from app.core.config import settings
@@ -41,29 +38,6 @@ async def analyze_line(
         line_index=data.line_index,
     )
     return AnalyzeResponse(**result)
-
-
-@router.post("/speak", response_model=SpeakResponse)
-@limiter.limit(settings.RATE_LIMIT_VOICE)
-async def speak_text(
-    request: Request,
-    data: SpeakRequest,
-    _: UUID = Depends(get_current_user_id),
-):
-    """
-    Convert text to speech using ElevenLabs.
-
-    Returns a public URL to the audio file stored on Vultr.
-    Rate limited per config (default: 20/minute).
-    """
-    audio_url = await voice_service.speak(
-        text=data.text,
-        voice_id=data.voice_id,
-        language=data.language,
-        speed=data.speed,
-    )
-    return SpeakResponse(audio_url=audio_url)
-
 
 @router.post("/interlinear", response_model=InterlinearResponse)
 @limiter.limit(settings.RATE_LIMIT_ANALYZE)

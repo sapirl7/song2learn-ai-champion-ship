@@ -5,9 +5,11 @@ import { useLang } from '../stores/useLang'
 import { t } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import { Music, Heart, Loader2, HelpCircle } from 'lucide-react'
+import { useQueryClient } from '@tanstack/react-query'
 
 function Saved() {
   const { uiLang } = useLang()
+  const queryClient = useQueryClient()
   const [songs, setSongs] = useState([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -19,6 +21,7 @@ function Saved() {
     try {
       const response = await userSongsApi.getSaved()
       setSongs(response.data)
+      queryClient.setQueryData(['saved-songs'], response.data)
     } catch (error) {
       toast.error('Failed to load saved songs')
     } finally {

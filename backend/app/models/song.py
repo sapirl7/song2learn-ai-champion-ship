@@ -1,10 +1,13 @@
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
 from app.db.session import Base
 
 
 class Song(Base):
     __tablename__ = "songs"
+    __table_args__ = (
+        UniqueConstraint("title", "artist", name="uix_songs_title_artist"),
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)

@@ -60,6 +60,7 @@ function SongView() {
     mutationFn: () => userSongsApi.save(id),
     onSuccess: (res) => {
       queryClient.setQueryData(['song-saved', id], { saved: res.data.saved })
+      queryClient.invalidateQueries({ queryKey: ['saved-songs'] })
       toast.success(res.data.message)
     },
     onError: () => toast.error('Failed to save song'),
@@ -75,7 +76,10 @@ function SongView() {
         song_id: parseInt(id),
         line_index: lineIndex,
       }, { signal }),
-    onSuccess: (res) => setAnalysis(res.data),
+    onSuccess: (res, variables) => {
+      if (variables?.lineIndex !== selectedLine) return
+      setAnalysis(res.data)
+    },
     onError: (error) => {
       if (error.name !== 'CanceledError' && error.code !== 'ERR_CANCELED') {
         toast.error('Failed to analyze line')
@@ -146,7 +150,7 @@ function SongView() {
     cancelPendingAnalysis()
   }, [cancelPendingAnalysis])
 
-  // Handle click to toggle selection
+  // Handle click to toggle selection (mobile-first)
   const handleLineClick = useCallback((line, index) => {
     cancelPendingAnalysis()
 

@@ -62,13 +62,18 @@ Edit `backend/.env` with your API keys:
 # Required API keys
 CEREBRAS_API_KEY=your-cerebras-api-key
 ELEVENLABS_API_KEY=your-elevenlabs-api-key
-VULTR_ACCESS_KEY=your-vultr-access-key
-VULTR_SECRET_KEY=your-vultr-secret-key
-VULTR_BUCKET_NAME=your-bucket-name
-VULTR_REGION=ewr1
+VULTR_S3_ACCESS_KEY=your-vultr-access-key
+VULTR_S3_SECRET_KEY=your-vultr-secret-key
+VULTR_S3_BUCKET=your-bucket-name
+VULTR_S3_REGION=ewr1
 
 # Important: Change this in production!
-JWT_SECRET_KEY=generate-a-secure-random-string
+JWT_SECRET=generate-a-secure-random-string
+
+# Feature flags (fail-fast validation)
+FEATURE_GOOGLE_AUTH=false
+FEATURE_AI=false
+FEATURE_VOICE=false
 ```
 
 ### 3. Start PostgreSQL
@@ -119,6 +124,8 @@ npm run dev
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login and get JWT token
+- `POST /api/auth/refresh` - Refresh access token
+- `POST /api/auth/logout` - Revoke refresh token
 - `GET /api/auth/me` - Get current user info
 
 ### Songs
@@ -133,7 +140,10 @@ npm run dev
 
 ### Analysis
 - `POST /api/analyze/line` - Analyze a lyric line (translation, grammar, vocabulary)
-- `POST /api/analyze/speak` - Generate TTS audio for text
+- `POST /api/voice/speak` - Generate TTS audio for text
+
+### Meta
+- `GET /api/meta/languages` - List supported languages
 
 ### Vocabulary
 - `POST /api/vocabulary` - Add word to vocabulary
@@ -160,11 +170,11 @@ raindrop apps create song2learn-api
 # Set environment variables
 raindrop config set CEREBRAS_API_KEY=xxx
 raindrop config set ELEVENLABS_API_KEY=xxx
-raindrop config set VULTR_ACCESS_KEY=xxx
-raindrop config set VULTR_SECRET_KEY=xxx
-raindrop config set VULTR_BUCKET_NAME=xxx
+raindrop config set VULTR_S3_ACCESS_KEY=xxx
+raindrop config set VULTR_S3_SECRET_KEY=xxx
+raindrop config set VULTR_S3_BUCKET=xxx
 raindrop config set VULTR_REGION=xxx
-raindrop config set JWT_SECRET_KEY=xxx
+raindrop config set JWT_SECRET=xxx
 raindrop config set DATABASE_URL=xxx  # Your Raindrop Postgres URL
 
 # Deploy
@@ -184,6 +194,7 @@ raindrop apps create song2learn-web --static
 
 # Set API URL
 echo "VITE_API_URL=https://your-api-url.raindrop.cloud/api" > .env.production
+echo "VITE_ENABLE_GOOGLE_AUTH=false" >> .env.production
 
 # Rebuild and deploy
 npm run build
@@ -193,7 +204,7 @@ raindrop deploy dist
 ### Vultr Object Storage Setup
 
 1. Create a bucket in Vultr Object Storage
-2. Set bucket ACL to allow public read for the `tts/` prefix
+2. Set bucket ACL to allow public read for the `tts/` prefix (optional if using signed URLs)
 3. Note your:
    - Access Key
    - Secret Key
@@ -204,6 +215,12 @@ raindrop deploy dist
 Audio files will be stored at URLs like:
 ```
 https://{bucket}.{region}.vultrobjects.com/tts/{hash}.mp3
+```
+
+For production, you can keep the bucket private and enable signed URLs:
+```
+VOICE_SIGNED_URLS=true
+VOICE_SIGNED_URL_TTL_SECONDS=3600
 ```
 
 ## Architecture Decisions

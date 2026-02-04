@@ -1,22 +1,11 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useUser } from '../stores/useUser'
+import { LANGUAGES } from '../i18n/translations'
 import toast from 'react-hot-toast'
 import { Music, Mail, Lock, Globe } from 'lucide-react'
 
-const languages = [
-  { code: 'en', name: 'English' },
-  { code: 'es', name: 'Spanish' },
-  { code: 'fr', name: 'French' },
-  { code: 'de', name: 'German' },
-  { code: 'it', name: 'Italian' },
-  { code: 'pl', name: 'Polish' },
-  { code: 'pt', name: 'Portuguese' },
-  { code: 'ru', name: 'Russian' },
-  { code: 'ja', name: 'Japanese' },
-  { code: 'ko', name: 'Korean' },
-  { code: 'zh', name: 'Chinese' },
-]
+const MIN_PASSWORD_LENGTH = 8
 
 function Register() {
   const navigate = useNavigate()
@@ -25,16 +14,26 @@ function Register() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     native_lang: 'en',
     learning_lang: 'es',
   })
 
+  const passwordOk = formData.password.length >= MIN_PASSWORD_LENGTH
+  const passwordsMatch = formData.password === formData.confirmPassword
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!passwordOk || !passwordsMatch) return
     setIsLoading(true)
 
     try {
-      await register(formData)
+      await register({
+        email: formData.email,
+        password: formData.password,
+        native_lang: formData.native_lang,
+        learning_lang: formData.learning_lang,
+      })
       toast.success('Account created successfully!')
       navigate('/search')
     } catch (error) {
@@ -84,13 +83,36 @@ function Register() {
               <input
                 type="password"
                 required
-                minLength={6}
+                minLength={MIN_PASSWORD_LENGTH}
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 placeholder="••••••••"
               />
             </div>
+            <p className={`mt-1 text-xs ${passwordOk ? 'text-green-600' : 'text-gray-500'}`}>
+              Minimum {MIN_PASSWORD_LENGTH} characters
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Confirm Password
+            </label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <input
+                type="password"
+                required
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                placeholder="••••••••"
+              />
+            </div>
+            {!passwordsMatch && formData.confirmPassword.length > 0 ? (
+              <p className="mt-1 text-xs text-red-600">Passwords do not match</p>
+            ) : null}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -105,7 +127,7 @@ function Register() {
                   onChange={(e) => setFormData({ ...formData, native_lang: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none"
                 >
-                  {languages.map((lang) => (
+                  {LANGUAGES.map((lang) => (
                     <option key={lang.code} value={lang.code}>
                       {lang.name}
                     </option>
@@ -125,7 +147,7 @@ function Register() {
                   onChange={(e) => setFormData({ ...formData, learning_lang: e.target.value })}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent appearance-none"
                 >
-                  {languages.map((lang) => (
+                  {LANGUAGES.map((lang) => (
                     <option key={lang.code} value={lang.code}>
                       {lang.name}
                     </option>
@@ -137,7 +159,7 @@ function Register() {
 
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !passwordOk || !passwordsMatch}
             className="w-full py-3 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Creating account...' : 'Create account'}
