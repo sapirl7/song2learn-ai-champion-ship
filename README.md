@@ -1,274 +1,414 @@
-# Song2Learn 2.0
+<p align="center">
+  <img src="https://img.shields.io/badge/Song2Learn-2.0-blueviolet?style=for-the-badge" alt="Song2Learn 2.0"/>
+  <img src="https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
+</p>
 
-Learn languages through song lyrics! Song2Learn is a web application that helps you learn new languages by analyzing song lyrics, providing translations, grammar explanations, and pronunciation practice.
+<h1 align="center">🎵 Song2Learn</h1>
 
-## Features
+<p align="center">
+  <strong>Learn languages through music you love</strong><br/>
+  AI-powered lyric analysis • Native pronunciation • Personal vocabulary
+</p>
 
-- 🎵 **Song Search**: Search and import songs from LRCLIB (lyrics database)
-- 📖 **Lyric Analysis**: Click on any line for translation, grammar breakdown, and vocabulary
-- 🔊 **Pronunciation**: Listen to native pronunciation via ElevenLabs TTS
-- 💾 **Save Songs**: Build your personal library of songs to learn from
-- 📚 **Vocabulary**: Save and manage words you're learning
-- ✏️ **Exercises**: Practice translation with AI-powered feedback
+---
 
-## Tech Stack
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| 🔍 **Song Search** | Search millions of songs via LRCLIB lyrics database |
+| 📖 **AI Analysis** | Click any line → instant translation, grammar breakdown, vocabulary |
+| 🔊 **Native Voice** | Listen to pronunciation via ElevenLabs TTS |
+| 💾 **Personal Library** | Save songs and build your learning collection |
+| 📚 **Vocabulary Tracker** | Save words, review, track progress |
+| ✏️ **Exercises** | Translation practice with AI feedback |
+
+---
+
+## 🏗️ Architecture
+
+```mermaid
+flowchart TB
+    subgraph Client["🖥️ Frontend (React + Vite)"]
+        UI[React Components]
+        Store[Zustand State]
+        API[API Client]
+    end
+
+    subgraph Server["⚡ Backend (FastAPI)"]
+        Router[API Router]
+        Auth[JWT Auth]
+        Services[Service Layer]
+    end
+
+    subgraph External["☁️ External Services"]
+        LRCLIB[(LRCLIB<br/>Lyrics)]
+        Cerebras[Cerebras AI<br/>Analysis]
+        Eleven[ElevenLabs<br/>TTS]
+        Vultr[(Vultr S3<br/>Audio)]
+    end
+
+    subgraph Data["💾 Data Layer"]
+        PG[(PostgreSQL)]
+        Cache[In-Memory Cache]
+    end
+
+    UI --> Store --> API
+    API -->|HTTPS| Router
+    Router --> Auth
+    Auth --> Services
+    Services --> LRCLIB
+    Services --> Cerebras
+    Services --> Eleven
+    Services --> Vultr
+    Services --> PG
+    Services --> Cache
+```
+
+---
+
+## 🔄 User Flow
+
+```mermaid
+journey
+    title Learning a Song with Song2Learn
+    section Discovery
+      Search for song: 5: User
+      Import from LRCLIB: 3: System
+      Save to library: 5: User
+    section Learning
+      View lyrics: 5: User
+      Click line for analysis: 5: User
+      AI generates breakdown: 4: System
+      Listen to pronunciation: 5: User
+    section Practice
+      Add words to vocabulary: 5: User
+      Do translation exercises: 4: User
+      Get AI feedback: 4: System
+```
+
+---
+
+## 🔐 Authentication Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant B as Backend
+    participant DB as PostgreSQL
+
+    U->>F: Login (email, password)
+    F->>B: POST /api/auth/login
+    B->>DB: Verify credentials
+    DB-->>B: User record
+    B->>B: Generate JWT tokens
+    B-->>F: {access_token, refresh_token}
+    F->>F: Store tokens
+    
+    Note over F,B: Subsequent requests
+    F->>B: Request + Bearer token
+    B->>B: Validate JWT
+    B-->>F: Protected resource
+
+    Note over F,B: Token refresh
+    F->>B: POST /api/auth/refresh
+    B-->>F: New access_token
+```
+
+---
+
+## 📊 Data Model
+
+```mermaid
+erDiagram
+    USER ||--o{ USER_SONG : saves
+    USER ||--o{ VOCABULARY : learns
+    USER ||--o{ SESSION : has
+    SONG ||--o{ USER_SONG : "saved by"
+    
+    USER {
+        uuid id PK
+        string email UK
+        string hashed_password
+        string native_lang
+        string target_lang
+        boolean is_active
+        datetime created_at
+    }
+    
+    SONG {
+        int id PK
+        string title
+        string artist
+        text lyrics
+        text synced_lyrics
+        int lrclib_id UK
+        datetime created_at
+    }
+    
+    USER_SONG {
+        int id PK
+        uuid user_id FK
+        int song_id FK
+        datetime saved_at
+    }
+    
+    VOCABULARY {
+        int id PK
+        uuid user_id FK
+        string word
+        string translation
+        string context
+        datetime created_at
+    }
+    
+    SESSION {
+        uuid id PK
+        uuid user_id FK
+        string refresh_token
+        datetime expires_at
+        boolean revoked
+    }
+
+    TTS_AUDIO {
+        int id PK
+        string text_hash UK
+        string voice_id
+        string s3_key
+        string s3_url
+        int size_bytes
+        datetime created_at
+    }
+```
+
+---
+
+## 🛠️ Tech Stack
+
+<table>
+<tr>
+<td width="50%">
 
 ### Backend
-- **FastAPI** - Modern async Python web framework
-- **PostgreSQL** - Database
-- **Alembic** - Database migrations
-- **JWT** - Authentication
-- **LRCLIB** - Lyrics source
-- **Cerebras AI** - Language analysis
-- **ElevenLabs** - Text-to-speech
-- **Vultr Object Storage** - Audio file storage (S3-compatible)
+- **FastAPI** — Async Python framework
+- **PostgreSQL** — Primary database
+- **SQLAlchemy** — Async ORM
+- **Alembic** — Migrations
+- **JWT** — Authentication
+- **slowapi** — Rate limiting
+
+</td>
+<td width="50%">
 
 ### Frontend
-- **React 18** - UI library
-- **Vite** - Build tool
-- **Tailwind CSS** - Styling
-- **React Router** - Routing
-- **Zustand** - State management
-- **Axios** - HTTP client
+- **React 18** — UI library
+- **Vite** — Build tool
+- **Tailwind CSS** — Styling
+- **React Router** — Navigation
+- **Zustand** — State management
+- **Axios** — HTTP client
 
-## Prerequisites
+</td>
+</tr>
+<tr>
+<td>
 
-- **Docker** and **Docker Compose**
-- **Python 3.11+**
-- **Node.js 18+**
-- API keys for:
-  - [Cerebras](https://cerebras.ai/) - Language analysis
-  - [ElevenLabs](https://elevenlabs.io/) - Text-to-speech
-  - [Vultr Object Storage](https://www.vultr.com/products/object-storage/) - Audio storage
+### External Services
+- **LRCLIB** — Lyrics database
+- **Cerebras AI** — Language analysis
+- **ElevenLabs** — Text-to-speech
+- **Vultr S3** — Audio storage
 
-## Quick Start (Local Development)
+</td>
+<td>
 
-### 1. Clone and setup environment
+### DevOps
+- **Docker** — Containerization
+- **Render** — Backend hosting
+- **Vercel** — Frontend hosting
+- **GitHub Actions** — CI/CD
 
-```bash
-# Clone the repository
-git clone <your-repo-url>
-cd song2learn
+</td>
+</tr>
+</table>
 
-# Copy environment files
-cp backend/.env.example backend/.env
-```
+---
 
-### 2. Configure environment variables
-
-Edit `backend/.env` with your API keys:
-
-```env
-# Required API keys
-CEREBRAS_API_KEY=your-cerebras-api-key
-ELEVENLABS_API_KEY=your-elevenlabs-api-key
-VULTR_S3_ACCESS_KEY=your-vultr-access-key
-VULTR_S3_SECRET_KEY=your-vultr-secret-key
-VULTR_S3_BUCKET=your-bucket-name
-VULTR_S3_REGION=ewr1
-
-# Important: Change this in production!
-JWT_SECRET=generate-a-secure-random-string
-
-# Feature flags (fail-fast validation)
-FEATURE_GOOGLE_AUTH=false
-FEATURE_AI=false
-FEATURE_VOICE=false
-```
-
-### 3. Start PostgreSQL
-
-```bash
-docker compose up -d
-```
-
-### 4. Setup and run Backend
-
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Run migrations
-alembic upgrade head
-
-# Start the server
-uvicorn app.main:app --reload --port 8000
-```
-
-### 5. Setup and run Frontend
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start dev server
-npm run dev
-```
-
-### 6. Access the application
-
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Docs: http://localhost:8000/docs
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login and get JWT token
-- `POST /api/auth/refresh` - Refresh access token
-- `POST /api/auth/logout` - Revoke refresh token
-- `GET /api/auth/me` - Get current user info
-
-### Songs
-- `GET /api/songs/search?q=query` - Search songs via LRCLIB
-- `POST /api/songs/import` - Import song from LRCLIB
-- `GET /api/songs/{id}` - Get song by ID
-
-### User Songs
-- `POST /api/user-songs/{song_id}/save` - Toggle save song
-- `GET /api/user-songs/saved` - Get saved songs
-- `GET /api/user-songs/{song_id}/is-saved` - Check if song is saved
-
-### Analysis
-- `POST /api/analyze/line` - Analyze a lyric line (translation, grammar, vocabulary)
-- `POST /api/voice/speak` - Generate TTS audio for text
-
-### Meta
-- `GET /api/meta/languages` - List supported languages
-
-### Vocabulary
-- `POST /api/vocabulary` - Add word to vocabulary
-- `GET /api/vocabulary` - Get all vocabulary
-- `DELETE /api/vocabulary/{id}` - Delete vocabulary entry
-
-### Exercises
-- `POST /api/exercises/translation-check` - Check translation attempt
-
-## Deployment to Raindrop
+## 🚀 Quick Start
 
 ### Prerequisites
-1. Install [Raindrop CLI](https://docs.raindrop.cloud/)
-2. Have your Raindrop account configured
 
-### Deploy Backend
+- Docker & Docker Compose
+- Python 3.11+
+- Node.js 18+
+
+### 1. Clone & Configure
 
 ```bash
+git clone https://github.com/sapirl7/song2learn-ai-champion-ship.git
+cd song2learn-ai-champion-ship
+
+# Setup environment
+cp backend/.env.example backend/.env
+# Edit backend/.env with your API keys
+```
+
+### 2. Start Services
+
+```bash
+# Start PostgreSQL
+docker compose up -d
+
+# Backend
 cd backend
+python -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+alembic upgrade head
+uvicorn app.main:app --reload --port 8000
 
-# Create Raindrop app
-raindrop apps create song2learn-api
-
-# Set environment variables
-raindrop config set CEREBRAS_API_KEY=xxx
-raindrop config set ELEVENLABS_API_KEY=xxx
-raindrop config set VULTR_S3_ACCESS_KEY=xxx
-raindrop config set VULTR_S3_SECRET_KEY=xxx
-raindrop config set VULTR_S3_BUCKET=xxx
-raindrop config set VULTR_REGION=xxx
-raindrop config set JWT_SECRET=xxx
-raindrop config set DATABASE_URL=xxx  # Your Raindrop Postgres URL
-
-# Deploy
-raindrop deploy
-```
-
-### Deploy Frontend
-
-```bash
+# Frontend (new terminal)
 cd frontend
-
-# Build for production
-npm run build
-
-# Create Raindrop static app
-raindrop apps create song2learn-web --static
-
-# Set API URL
-echo "VITE_API_URL=https://your-api-url.raindrop.cloud/api" > .env.production
-echo "VITE_ENABLE_GOOGLE_AUTH=false" >> .env.production
-
-# Rebuild and deploy
-npm run build
-raindrop deploy dist
+npm install && npm run dev
 ```
 
-### Vultr Object Storage Setup
+### 3. Access
 
-1. Create a bucket in Vultr Object Storage
-2. Set bucket ACL to allow public read for the `tts/` prefix (optional if using signed URLs)
-3. Note your:
-   - Access Key
-   - Secret Key
-   - Bucket Name
-   - Region (e.g., `ewr1`)
-   - Endpoint URL (e.g., `https://ewr1.vultrobjects.com`)
+| Service | URL |
+|---------|-----|
+| Frontend | http://localhost:3000 |
+| Backend API | http://localhost:8000 |
+| API Docs | http://localhost:8000/docs |
 
-Audio files will be stored at URLs like:
-```
-https://{bucket}.{region}.vultrobjects.com/tts/{hash}.mp3
-```
+---
 
-For production, you can keep the bucket private and enable signed URLs:
-```
-VOICE_SIGNED_URLS=true
-VOICE_SIGNED_URL_TTL_SECONDS=3600
-```
-
-## Architecture Decisions
-
-### Rate Limiting
-- Uses `slowapi` with `X-Forwarded-For` header support for proxy environments
-- Analyze endpoint: 30 req/min
-- Speak endpoint: 20 req/min
-
-### Caching
-- Analysis results cached in-memory (TTL: 1 hour)
-- Audio files stored permanently in Vultr, checked before regenerating
-
-### Database
-- Uses SQLAlchemy async with asyncpg
-- Migrations managed with Alembic
-- Songs de-duplicated by (lower(title), lower(artist))
+## 📡 API Reference
 
 ### Authentication
-- JWT tokens with configurable expiry (default: 24 hours)
-- Passwords hashed with bcrypt via passlib
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Get JWT tokens |
+| POST | `/api/auth/refresh` | Refresh access token |
+| POST | `/api/auth/logout` | Revoke refresh token |
+| GET | `/api/auth/me` | Current user info |
 
-## Project Structure
+### Songs
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/songs/search?q=` | Search LRCLIB |
+| POST | `/api/songs/import` | Import song |
+| GET | `/api/songs/{id}` | Get song by ID |
+
+### Learning
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/analyze/line` | AI analysis of lyric |
+| POST | `/api/voice/speak` | Generate TTS audio |
+| POST | `/api/vocabulary` | Add vocabulary word |
+| GET | `/api/vocabulary` | Get all vocabulary |
+
+---
+
+## 🔧 Configuration
+
+<details>
+<summary><strong>Environment Variables</strong></summary>
+
+```env
+# Database
+DATABASE_URL=postgresql+asyncpg://user:pass@localhost/song2learn
+
+# Authentication
+JWT_SECRET=your-secret-key
+JWT_ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=15
+REFRESH_TOKEN_EXPIRE_DAYS=30
+
+# Feature Flags
+FEATURE_AI=true
+FEATURE_VOICE=true
+FEATURE_GOOGLE_AUTH=false
+
+# External Services
+CEREBRAS_API_KEY=...
+ELEVENLABS_API_KEY=...
+VULTR_S3_ACCESS_KEY=...
+VULTR_S3_SECRET_KEY=...
+VULTR_S3_BUCKET=song2learn-audio
+VULTR_S3_REGION=ams1
+
+# Rate Limiting
+RATE_LIMIT_ANALYZE=60/minute
+RATE_LIMIT_VOICE=20/minute
+```
+
+</details>
+
+---
+
+## 📁 Project Structure
 
 ```
 song2learn/
 ├── backend/
 │   ├── alembic/           # Database migrations
 │   ├── app/
-│   │   ├── api/           # API endpoints
-│   │   ├── core/          # Config, security, rate limiting
+│   │   ├── api/           # FastAPI endpoints
+│   │   │   └── endpoints/ # Route handlers
+│   │   ├── core/          # Config, security
 │   │   ├── db/            # Database session
 │   │   ├── models/        # SQLAlchemy models
 │   │   ├── schemas/       # Pydantic schemas
-│   │   └── services/      # External services (LRCLIB, Cerebras, etc.)
-│   ├── requirements.txt
-│   └── .env.example
+│   │   └── services/      # Business logic
+│   ├── tests/             # Pytest tests
+│   └── requirements.txt
 ├── frontend/
 │   ├── src/
 │   │   ├── api/           # API client
 │   │   ├── components/    # React components
-│   │   ├── pages/         # Page components
+│   │   ├── pages/         # Page views
 │   │   └── stores/        # Zustand stores
 │   └── package.json
+├── docs/                  # Documentation
 ├── docker-compose.yml
+├── render.yaml            # Render deployment
 └── README.md
 ```
 
-## License
+---
 
-MIT
+## 🌐 Deployment
+
+The app deploys as a split architecture:
+
+```mermaid
+flowchart LR
+    subgraph Vercel["Vercel"]
+        FE[Frontend<br/>React SPA]
+    end
+    
+    subgraph Render["Render"]
+        BE[Backend API<br/>FastAPI]
+        DB[(PostgreSQL)]
+    end
+    
+    subgraph Vultr["Vultr"]
+        S3[(Object Storage<br/>Audio Files)]
+    end
+    
+    User((User)) --> FE
+    FE -->|API calls| BE
+    BE --> DB
+    BE --> S3
+```
+
+See [docs/deploy.md](docs/deploy.md) for detailed deployment instructions.
+
+---
+
+## 📄 License
+
+MIT © 2026
